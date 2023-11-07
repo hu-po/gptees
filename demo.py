@@ -9,20 +9,21 @@ from openai import OpenAI
 from pydub import AudioSegment
 from pydub.playback import play
 
-API_KEY = os.environ["OPENAI_API_KEY"] # Put it in your bashrc
-VISION_MODEL = "gpt-4-vision-preview" # Vision model
-TTS_MODEL = "tts-1" # Text-to-speech model
-STT_MODEL = "whisper-1" # Speech-to-text model
-VOICE = "echo" # (alloy, echo, fable, onyx, nova, and shimmer)
-VIDEO_DEVICE_PATH = "/dev/video4" # Camera device path
-CAMERA_WAIT_MS = 3000  # How long to show image before
-MAX_TOKENS_VISION = 64 # max tokens for reply
+API_KEY = os.environ["OPENAI_API_KEY"]  # Put it in your bashrc
+VISION_MODEL = "gpt-4-vision-preview"  # Vision model
+TTS_MODEL = "tts-1"  # Text-to-speech model
+STT_MODEL = "whisper-1"  # Speech-to-text model
+VOICE = "echo"  # (alloy, echo, fable, onyx, nova, and shimmer)
+VIDEO_DEVICE_PATH = "/dev/video4"  # Camera device path
+CAMERA_WAIT_MS = 2056  # How long to show image before
+MAX_TOKENS_VISION = 32  # max tokens for reply
 AUDIO_RECORD_SECONDS = 6  # Duration for audio recording
-AUDIO_SAMPLE_RATE = 44100  # Sample rate for audio recording
+AUDIO_SAMPLE_RATE = 22100  # Sample rate for audio recording
 AUDIO_CHANNELS = 1  # mono
 AUDIO_OUTPUT_PATH = "/tmp/gpt_audio.wav"
 
 client = OpenAI()
+
 
 def capture_and_show_image():
     cap = cv2.VideoCapture(VIDEO_DEVICE_PATH)
@@ -36,7 +37,7 @@ def capture_and_show_image():
     cv2.imshow("Captured Image", frame)
     cv2.waitKey(1)  # Display the image for a short moment to render the window
     print("Press any key to close the image and start audio recording.")
-    cv2.waitKey(CAMERA_WAIT_MS)  
+    cv2.waitKey(CAMERA_WAIT_MS)
     cv2.destroyAllWindows()
     return frame
 
@@ -92,31 +93,21 @@ def vision(prompt, base64_image):
 
 
 def stream_and_play(text):
-    response = client.audio.speech.create(model=TTS_MODEL,voice=VOICE,input=text)
+    response = client.audio.speech.create(model=TTS_MODEL, voice=VOICE, input=text)
     byte_stream = io.BytesIO(response.content)
     audio = AudioSegment.from_file(byte_stream, format="mp3")
     play(audio)
 
 
-def main():
-    try:
-        while True:
-            # Take an image and show it to the user
-            frame = capture_and_show_image()
-            record_audio()
-            prompt = transcribe_audio()
-            print(f"Transcribed prompt: {prompt}")
-            print(f"Sending to vision model with size {frame.shape}")
-            base64_image = encode_image_to_base64(frame)
-            reply = vision(prompt, base64_image)
-            print(f"Vision model reply: {reply}")
-            print("Playing audio.")
-            #HACK: Audio beginnign clips, so add some nonsense to the start
-            reply = "mhm mhm mhm " + reply
-            stream_and_play(reply)
-    except KeyboardInterrupt:
-        print("Exiting program.")
-
-
 if __name__ == "__main__":
-    main()
+    while True:
+        frame = capture_and_show_image()
+        record_audio()
+        prompt = transcribe_audio()
+        print(f"Transcribed prompt: {prompt}")
+        print(f"Sending to vision model with size {frame.shape}")
+        base64_image = encode_image_to_base64(frame)
+        reply = vision(prompt, base64_image)
+        print(f"Vision model reply: {reply}")
+        print("Playing audio.")
+        stream_and_play(reply)
