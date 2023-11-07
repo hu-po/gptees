@@ -92,16 +92,37 @@ def vision(prompt, base64_image):
     return response.json()["choices"][0]["message"]["content"]
 
 
-def stream_and_play(text):
-    response = client.audio.speech.create(model=TTS_MODEL, voice=VOICE, input=text)
-    byte_stream = io.BytesIO(response.content)
-    audio = AudioSegment.from_file(byte_stream, format="mp3")
+def text2speech(text, save_to_file=False, file_name="output.mp3"):
+    # Check if the file already exists and the save_to_file flag is True
+    if save_to_file and os.path.exists(file_name):
+        audio = AudioSegment.from_file(file_name, format="mp3")
+    else:
+        # If the file doesn't exist, create the audio and save it if required
+        response = client.audio.speech.create(model=TTS_MODEL, voice=VOICE, input=text)
+        byte_stream = io.BytesIO(response.content)
+        audio = AudioSegment.from_file(byte_stream, format="mp3")
+
+        # Save the file if save_to_file is True
+        if save_to_file:
+            audio.export(file_name, format="mp3")
+
+    # Play the audio
     play(audio)
 
 
 if __name__ == "__main__":
     while True:
+        text2speech(
+            "taking image in 5, 4, 3, 2, ... 1",
+            save_to_file=True,
+            file_name="/tmp/countdown.mp3",
+        )
         frame = capture_and_show_image()
+        text2speech(
+            "speak your question",
+            save_to_file=True,
+            file_name="/tmp/speak_question.mp3",
+        )
         record_audio()
         prompt = transcribe_audio()
         print(f"Transcribed prompt: {prompt}")
@@ -110,4 +131,4 @@ if __name__ == "__main__":
         reply = vision(prompt, base64_image)
         print(f"Vision model reply: {reply}")
         print("Playing audio.")
-        stream_and_play(reply)
+        text2speech(reply)
