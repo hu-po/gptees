@@ -111,8 +111,13 @@ def main():
             record_audio()
             prompt = transcribe_audio()
             print(f"Transcribed prompt: {prompt}")
+            print(f"Sending to vision model with size {frame.shape}")
             base64_image = encode_image_to_base64(frame)
             reply = vision(prompt, base64_image)
+            print(f"Vision model reply: {reply}")
+            print("Playing audio.")
+            #HACK: Audio beginnign clips, so add some nonsense to the start
+            reply = "mhm mhm mhm " + reply
             stream_and_play(reply)
     except KeyboardInterrupt:
         print("Exiting program.")
