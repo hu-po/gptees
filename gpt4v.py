@@ -6,18 +6,21 @@ import base64
 import cv2
 import requests
 import io
+import time
 from openai import OpenAI
 from pydub import AudioSegment
 from pydub.playback import play
 
 client = OpenAI()
-cap = cv2.VideoCapture('/dev/video4')  # Using the device path
 
 def capture_image_from_webcam():
+    cap = cv2.VideoCapture('/dev/video4')  # Using the device path
     if not cap.isOpened():
         raise IOError("Cannot open webcam")
     ret, frame = cap.read()  # Capture frame-by-frame
     cap.release()  # When everything done, release the capture
+    cv2.imshow("Input", frame)
+    time.sleep(1)
     cv2.destroyAllWindows()
     if ret:
         return frame
@@ -94,5 +97,6 @@ def stream_and_play(text):
 
 
 if __name__ == "__main__":
-    reply = vision()
-    stream_and_play(reply)
+    while True:
+      reply = vision()
+      stream_and_play(reply)
