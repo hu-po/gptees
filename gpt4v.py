@@ -11,8 +11,7 @@ from pydub import AudioSegment
 from pydub.playback import play
 
 client = OpenAI()
-cap = cv2.VideoCapture(0)
-
+cap = cv2.VideoCapture('/dev/video4')  # Using the device path
 
 def capture_image_from_webcam():
     if not cap.isOpened():
