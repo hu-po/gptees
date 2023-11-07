@@ -12,7 +12,8 @@ from pydub.playback import play
 # Constants for easy editing
 API_KEY = os.environ["OPENAI_API_KEY"]
 VISION_MODEL = "gpt-4-vision-preview"
-AUDIO_MODEL = "tts-1"
+TTS_MODEL = "tts-1"
+STT_MODEL = "whisper-1"
 VOICE = "alloy"
 VIDEO_DEVICE_PATH = "/dev/video4"
 AUDIO_RECORD_SECONDS = 3  # Duration for audio recording
@@ -43,7 +44,6 @@ def encode_image_to_base64(img):
 
 
 def record_audio():
-    print("Recording will start after closing the image window.")
     print(f"Recording for {AUDIO_RECORD_SECONDS} seconds.")
     audio_data = sd.rec(
         int(AUDIO_RECORD_SECONDS * AUDIO_SAMPLE_RATE),
@@ -58,7 +58,7 @@ def record_audio():
 def transcribe_audio(audio_path: str = AUDIO_OUTPUT_PATH):
     with open(audio_path, "rb") as audio_file:
         transcript = client.audio.transcriptions.create(
-            model="whisper-1", file=audio_file, response_format="text"
+            model=STT_MODEL, file=audio_file, response_format="text"
         )
     return transcript
 
@@ -89,7 +89,7 @@ def vision(prompt, base64_image):
 
 def stream_and_play(text):
     response = client.audio.speech.create(
-        model=AUDIO_MODEL,
+        model=TTS_MODEL,
         voice=VOICE,
         input=text,
     )
