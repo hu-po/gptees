@@ -9,14 +9,15 @@ from openai import OpenAI
 from pydub import AudioSegment
 from pydub.playback import play
 
-API_KEY = os.environ["OPENAI_API_KEY"]
-VISION_MODEL = "gpt-4-vision-preview"
-CAMERA_WAIT_MS = 1000  # How long to show webcam before recording audio
-TTS_MODEL = "tts-1"
-STT_MODEL = "whisper-1"
-VOICE = "alloy"
-VIDEO_DEVICE_PATH = "/dev/video4"
-AUDIO_RECORD_SECONDS = 3  # Duration for audio recording
+API_KEY = os.environ["OPENAI_API_KEY"] # Put it in your bashrc
+VISION_MODEL = "gpt-4-vision-preview" # Vision model
+TTS_MODEL = "tts-1" # Text-to-speech model
+STT_MODEL = "whisper-1" # Speech-to-text model
+VOICE = "alloy" # (alloy, echo, fable, onyx, nova, and shimmer)
+VIDEO_DEVICE_PATH = "/dev/video4" # Camera device path
+CAMERA_WAIT_MS = 3000  # How long to show image before
+MAX_TOKENS_VISION = 64 # max tokens for reply
+AUDIO_RECORD_SECONDS = 6  # Duration for audio recording
 AUDIO_SAMPLE_RATE = 44100  # Sample rate for audio recording
 AUDIO_CHANNELS = 1  # mono
 AUDIO_OUTPUT_PATH = "/tmp/gpt_audio.wav"
@@ -82,7 +83,7 @@ def vision(prompt, base64_image):
                 ],
             }
         ],
-        "max_tokens": 24,
+        "max_tokens": MAX_TOKENS_VISION,
     }
     response = requests.post(
         "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
