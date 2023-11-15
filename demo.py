@@ -48,26 +48,6 @@ def encode_image_to_base64(img):
     return jpg_as_text
 
 
-def record_audio():
-    print(f"Recording for {AUDIO_RECORD_SECONDS} seconds.")
-    audio_data = sd.rec(
-        int(AUDIO_RECORD_SECONDS * AUDIO_SAMPLE_RATE),
-        samplerate=AUDIO_SAMPLE_RATE,
-        channels=AUDIO_CHANNELS,
-    )
-    sd.wait()  # Wait until recording is finished
-    print("Recording finished.")
-    write(AUDIO_OUTPUT_PATH, AUDIO_SAMPLE_RATE, audio_data)  # Save as WAV file
-
-
-def transcribe_audio(audio_path: str = AUDIO_OUTPUT_PATH):
-    with open(audio_path, "rb") as audio_file:
-        transcript = client.audio.transcriptions.create(
-            model=STT_MODEL, file=audio_file, response_format="text"
-        )
-    return transcript
-
-
 def vision(prompt, base64_image):
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {API_KEY}"}
     payload = {
@@ -90,6 +70,26 @@ def vision(prompt, base64_image):
         "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
     )
     return response.json()["choices"][0]["message"]["content"]
+
+
+def record_audio():
+    print(f"Recording for {AUDIO_RECORD_SECONDS} seconds.")
+    audio_data = sd.rec(
+        int(AUDIO_RECORD_SECONDS * AUDIO_SAMPLE_RATE),
+        samplerate=AUDIO_SAMPLE_RATE,
+        channels=AUDIO_CHANNELS,
+    )
+    sd.wait()  # Wait until recording is finished
+    print("Recording finished.")
+    write(AUDIO_OUTPUT_PATH, AUDIO_SAMPLE_RATE, audio_data)  # Save as WAV file
+
+
+def transcribe_audio(audio_path: str = AUDIO_OUTPUT_PATH):
+    with open(audio_path, "rb") as audio_file:
+        transcript = client.audio.transcriptions.create(
+            model=STT_MODEL, file=audio_file, response_format="text"
+        )
+    return transcript
 
 
 def text2speech(text, save_to_file=False, file_name="output.mp3"):
