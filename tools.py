@@ -10,7 +10,7 @@ SYSTEM_PROMPT: str = ". ".join(
         "As the master node, you decide what tools to use",
         "The robot's goals are to explore and understand the environment",
         "If a human is visible, perform the wave action",
-        "If the robot is looking at the ceiling, use the get_up tool",
+        "If the robot is looking at the ceiling, perform the get_up action",
         "When in doubt, move around",
         "Try to be random in your movements",
     ]
@@ -47,54 +47,39 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "look_at",
-            "description": "Orient the robot's camera to a specified pan and tilt",
+            "description": "Orient the robot's head camera (pan and tilt)",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "pan": {
-                        "type": "number",
-                        "description": "Pan angle in degrees",
-                    },
-                    "tilt": {
-                        "type": "number",
-                        "description": "Tilt angle in degrees",
+                    "direction": {
+                        "type": "string",
+                        "enum": [
+                            "look_up",
+                            "look_down",
+                            "look_left",
+                            "look_right",
+                        ],
                     },
                 },
-                "required": ["pan", "tilt"],
+                "required": ["direction"],
             },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "take_image",
-            "description": "Capture an image using the robot's camera",
-            "parameters": {"type": "object", "properties": {}},
         },
     },
     {
         "type": "function",
         "function": {
             "name": "perform",
-            "description": "Perform a specified action",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "action_name": {
-                        "type": "string",
-                        "description": "The name of the action to perform",
-                    },
+            "description": "Perform a specified named action",
+            "properties": {
+                "action_name": {
+                    "type": "string",
+                    "enum": [
+                        "wave",
+                        "get_up",
+                    ],
                 },
-                "required": ["action_name"],
             },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_up",
-            "description": "Command the robot to get up",
-            "parameters": {"type": "object", "properties": {}},
+            "required": ["action_name"],
         },
     },
 ]
@@ -106,13 +91,8 @@ def move_to(direction: str) -> None:
     pass  # Implementation goes here
 
 
-def look_at(pan: float, tilt: float) -> None:
-    print(f"Looking at pan {pan} and tilt {tilt}")
-    pass  # Implementation goes here
-
-
-def take_image() -> None:
-    print("Taking image")
+def look_at(direction: str) -> None:
+    print(f"Looking at {direction}")
     pass  # Implementation goes here
 
 
@@ -121,17 +101,10 @@ def perform(action_name: str) -> None:
     pass  # Implementation goes here
 
 
-def get_up() -> None:
-    print("Getting up")
-    pass  # Implementation goes here
-
-
 TOOLS_DICT = {
     "move_to": move_to,
     "look_at": look_at,
-    "take_image": take_image,
     "perform": perform,
-    "get_up": get_up,
 }
 
 
