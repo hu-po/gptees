@@ -81,3 +81,44 @@ robot_tools = [
         }
     },
 ]
+
+def move_to(direction: str, rotation: float) -> None:
+    """
+    Move the robot in a specified direction with a rotation.
+    
+    Args:
+        direction (str): The direction to move in, e.g., forward, backward, left, right.
+        rotation (float): The rotation angle in degrees.
+    """
+    pass  # Implementation goes here
+
+def look_at(pan: float, tilt: float) -> None:
+    """
+    Orient the robot's camera to a specified pan and tilt.
+    
+    Args:
+        pan (float): Pan angle in degrees.
+        tilt (float): Tilt angle in degrees.
+    """
+    pass  # Implementation goes here
+
+def take_image() -> None:
+    """
+    Capture an image using the robot's camera.
+    """
+    pass  # Implementation goes here
+
+def perform(action_name: str) -> None:
+    """
+    Perform a specified action.
+    
+    Args:
+        action_name (str): The name of the action to perform.
+    """
+    pass  # Implementation goes here
+
+def get_up() -> None:
+    """
+    Command the robot to get up.
+    """
+    pass  # Implementation goes here
