@@ -12,6 +12,7 @@ SYSTEM_PROMPT: str = ". ".join(
         "If a human is visible, perform the wave action",
         "If the robot is looking at the ceiling, use the get_up tool",
         "When in doubt, move around",
+        "Try to be random in your movements",
     ]
 )
 MODEL: str = "gpt-4-1106-preview"
@@ -22,20 +23,23 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "move_to",
-            "description": "Move the robot in a specified direction with a rotation",
+            "description": "Move the robot using a specified direction",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "direction": {
                         "type": "string",
-                        "description": "The direction to move in, e.g., forward, backward, left, right",
-                    },
-                    "rotation": {
-                        "type": "number",
-                        "description": "The rotation angle in degrees",
+                        "enum": [
+                            "forward",
+                            "backward",
+                            "left",
+                            "right",
+                            "rotate_left",
+                            "rotate_right",
+                        ],
                     },
                 },
-                "required": ["direction", "rotation"],
+                "required": ["direction"],
             },
         },
     },
@@ -97,8 +101,8 @@ TOOLS = [
 FUNCTIONS = [tool["function"] for tool in TOOLS]
 
 
-def move_to(direction: str, rotation: float) -> None:
-    print(f"Moving to {direction} with rotation {rotation}")
+def move_to(direction: str) -> None:
+    print(f"Moving to {direction}")
     pass  # Implementation goes here
 
 
