@@ -4,6 +4,9 @@ import requests
 
 # https://platform.openai.com/docs/guides/vision
 
+MODEL: str = "gpt-4-vision-preview"
+MAX_TOKENS: int = 32
+
 def encode_image_from_path(image_path: str) -> str:
   with open(image_path, "rb") as image_file:
     return base64.b64encode(image_file.read()).decode('utf-8')
@@ -12,8 +15,8 @@ def encode_image_from_path(image_path: str) -> str:
 def vision(
     prompt: str,
     base64_image: str,
-    vision_model: str = "gpt-4-vision-preview",
-    max_tokens: int = 32,
+    vision_model: str = MODEL,
+    max_tokens: int = MAX_TOKENS,
 ) -> str:
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}"}
     payload = {
