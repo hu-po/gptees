@@ -70,13 +70,16 @@ TOOLS = [
         "function": {
             "name": "perform",
             "description": "Perform a specified named action",
-            "properties": {
-                "action_name": {
-                    "type": "string",
-                    "enum": [
-                        "wave",
-                        "get_up",
-                    ],
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "direction": {
+                        "type": "string",
+                        "enum": [
+                            "wave",
+                            "get_up",
+                        ],
+                    },
                 },
             },
             "required": ["action_name"],
