@@ -224,24 +224,18 @@ def speak(
     voice: str = VOICE,
     save_to_file = True,
 ) -> str:
-    # Check if the file already exists and the save_to_file flag is True
-    if save_to_file:
-        file_name = f"/tmp/test.{text[:10]}.mp3"
-        if os.path.exists(file_name):
-            print(f"Audio already exists at {file_name}")
-            audio = AudioSegment.from_file(file_name, format="mp3")
-    else:
-        # If the file doesn't exist, create the audio and save it if required
+    # Check if the file already exists
+    file_name = f"/tmp/test.{text[:10]}.mp3"
+    if not os.path.exists(file_name):
         response = CLIENT.audio.speech.create(model=model, voice=voice, input=text)
         byte_stream = io.BytesIO(response.content)
         audio = AudioSegment.from_file(byte_stream, format="mp3")
-
-        # Save the file if save_to_file is True
         if save_to_file:
             audio.export(file_name, format="mp3")
             print(f"Saved audio to {file_name}")
-
-    # Play the audio
+    else:
+        print(f"Audio already exists at {file_name}")
+        audio = AudioSegment.from_file(file_name, format="mp3")
     print(f"Playing audio: {text}")
     play(audio)
     return f"Speaking text: {text}"
