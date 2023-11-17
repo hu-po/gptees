@@ -73,7 +73,7 @@ TOOLS = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "direction": {
+                    "action_name": {
                         "type": "string",
                         "enum": [
                             "wave",
