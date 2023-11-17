@@ -108,6 +108,7 @@ def speak(
     if save_to_file:
         file_name = f"/tmp/test.{text[:10]}.mp3"
         if os.path.exists(file_name):
+            print(f"Audio already exists at {file_name}")
             audio = AudioSegment.from_file(file_name, format="mp3")
     else:
         # If the file doesn't exist, create the audio and save it if required
@@ -118,8 +119,10 @@ def speak(
         # Save the file if save_to_file is True
         if save_to_file:
             audio.export(file_name, format="mp3")
+            print(f"Saved audio to {file_name}")
 
     # Play the audio
+    print(f"Playing audio: {text}")
     play(audio)
     return f"Speaking text: {text}"
 
