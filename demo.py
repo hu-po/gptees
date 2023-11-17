@@ -15,6 +15,7 @@ TTS_MODEL = "tts-1"  # Text-to-speech model
 STT_MODEL = "whisper-1"  # Speech-to-text model
 VOICE = "echo"  # (alloy, echo, fable, onyx, nova, and shimmer)
 VIDEO_DEVICE_PATH = "/dev/video0"  # Camera device path
+CAMERA_WAIT_ON = True  # Pause camera to show image
 CAMERA_WAIT_MS = 2056  # How long to show image before
 MAX_TOKENS_VISION = 32  # max tokens for reply
 AUDIO_RECORD_SECONDS = 6  # Duration for audio recording
@@ -25,7 +26,7 @@ AUDIO_OUTPUT_PATH = "/tmp/gpt_audio.wav"
 client = OpenAI()
 
 
-def capture_and_show_image():
+def capture(show_image=CAMERA_WAIT_ON):
     cap = cv2.VideoCapture(VIDEO_DEVICE_PATH)
     if not cap.isOpened():
         raise IOError("Cannot open webcam")
@@ -33,12 +34,13 @@ def capture_and_show_image():
     if not ret:
         raise ValueError("Could not capture an image from the webcam")
     cap.release()  # Release the webcam
-    cv2.destroyAllWindows()
-    cv2.imshow("Captured Image", frame)
-    cv2.waitKey(1)  # Display the image for a short moment to render the window
-    print("Press any key to close the image and start audio recording.")
-    cv2.waitKey(CAMERA_WAIT_MS)
-    cv2.destroyAllWindows()
+    if show_image:
+        cv2.destroyAllWindows()
+        cv2.imshow("Captured Image", frame)
+        cv2.waitKey(1)  # Display the image for a short moment to render the window
+        print("Press any key to close the image and start audio recording.")
+        cv2.waitKey(CAMERA_WAIT_MS)
+        cv2.destroyAllWindows()
     return frame
 
 
@@ -117,7 +119,7 @@ if __name__ == "__main__":
             save_to_file=True,
             file_name="/tmp/countdown.mp3",
         )
-        frame = capture_and_show_image()
+        frame = capture()
         text2speech(
             "speak your question",
             save_to_file=True,
