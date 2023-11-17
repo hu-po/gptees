@@ -39,3 +39,6 @@ def vision(
         "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
     )
     return response.json()["choices"][0]["message"]["content"]
+
+if __name__ == "__main__":
+   print("everything imported successfully")
