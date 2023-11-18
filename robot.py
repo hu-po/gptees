@@ -1,13 +1,17 @@
-import os
 import base64
-import requests
 import io
 import json
-import sounddevice as sd
-from scipy.io.wavfile import write
+import os
+import shutil
+import subprocess
+
+import cv2
+import requests
 from openai import OpenAI
 from pydub import AudioSegment
 from pydub.playback import play
+import sounddevice as sd
+from scipy.io.wavfile import write
 
 
 CLIENT: OpenAI = OpenAI()
@@ -25,13 +29,13 @@ VISION_PROMPT: str = ". ".join(
     ]
 )
 MAX_TOKENS_VISION: int = 32  # max tokens for reply
-VISION_OUTPUT_PATH: str = "/tmp/test.png"  # default image for test behavior
+VISION_DEVICE_PATH: str = "/dev/usb_cam"  # Camera device path
 
 # Audio models
 TTS_MODEL: str = "tts-1"  # Text-to-speech model
 STT_MODEL: str = "whisper-1"  # Speech-to-text model
 VOICE: str = "echo"  # (alloy, echo, fable, onyx, nova, and shimmer)
-GREETING: str = "hello there" # Greeting is spoken on start
+GREETING: str = "hello there"  # Greeting is spoken on start
 AUDIO_RECORD_SECONDS: int = 6  # Duration for audio recording
 AUDIO_SAMPLE_RATE: int = 22100  # Sample rate for audio recording
 AUDIO_CHANNELS: int = 1  # mono
@@ -45,9 +49,9 @@ SYSTEM_PROMPT: str = ". ".join(
         "The user is the robot vision module",
         "As the master node, you decide what tools to use",
         "The robot's goals are to explore and understand the environment",
-        "If a human is visible, perform the wave action",
-        "If the robot is looking at the ceiling, perform the get_up action",
-        "When in doubt, move around",
+        "If a human is visible, perform the greet action",
+        # "If the robot is looking at the ceiling, perform the get_up action",
+        "When in doubt, pick a random action!",
         "Try to be random in your movements",
     ]
 )
@@ -57,7 +61,7 @@ TOOLS = [
     {
         "type": "function",
         "function": {
-            "name": "move_to",
+            "name": "explore",
             "description": "Move the robot using a specified direction",
             "parameters": {
                 "type": "object",
@@ -71,24 +75,6 @@ TOOLS = [
                             "right",
                             "rotate_left",
                             "rotate_right",
-                        ],
-                    },
-                },
-                "required": ["direction"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "look_at",
-            "description": "Orient the robot's head camera (pan and tilt)",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "direction": {
-                        "type": "string",
-                        "enum": [
                             "look_up",
                             "look_down",
                             "look_left",
@@ -103,6 +89,13 @@ TOOLS = [
     {
         "type": "function",
         "function": {
+            "name": "look",
+            "description": "Take an image from the camera and use the robot vision module to describe it",
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "perform",
             "description": "Perform a specified named action",
             "parameters": {
@@ -111,8 +104,15 @@ TOOLS = [
                     "action_name": {
                         "type": "string",
                         "enum": [
-                            "wave",
-                            "get_up",
+                            "left_shot",
+                            "right_shot",
+                            "stand",
+                            "walk_ready",
+                            "twist",
+                            "three",
+                            "four",
+                            "hand_back",
+                            "greet",
                         ],
                     },
                 },
@@ -158,17 +158,21 @@ TOOLS = [
 FUNCTIONS = [tool["function"] for tool in TOOLS]
 
 
-def encode_image_from_path(image_path: str = VISION_OUTPUT_PATH) -> str:
-    with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode("utf-8")
-
-
-def vision(
-    base64_image: str,
+def look(
+    device: str = VISION_DEVICE_PATH,
     prompt: str = VISION_PROMPT,
     vision_model: str = VISION_MODEL,
     max_tokens: int = MAX_TOKENS_VISION,
 ) -> str:
+    cap = cv2.VideoCapture(device)
+    if not cap.isOpened():
+        return f"Cannot open webcam at {device}"
+    ret, frame = cap.read()  # Capture frame-by-frame
+    if not ret:
+        return f"Could not capture an image from the webcam at {device}"
+    cap.release()  # Release the webcam
+    _, buffer = frame.imencode(".jpg", frame)
+    base64_image = base64.b64encode(buffer).decode("utf-8")
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}",
@@ -222,7 +226,7 @@ def speak(
     text: str,
     model: str = TTS_MODEL,
     voice: str = VOICE,
-    save_to_file = True,
+    save_to_file=True,
 ) -> str:
     # Check if the file already exists
     file_name = f"/tmp/test.{text[:10]}.mp3"
@@ -241,21 +245,57 @@ def speak(
     return f"Speaking text: {text}"
 
 
-def move_to(direction: str) -> str:
-    return f"Moving to {direction}"
-
-
-def look_at(direction: str) -> str:
-    return f"Looking at {direction}"
-
-
 def perform(action_name: str) -> str:
-    return f"Performing action {action_name}"
+    # Copy over local file to ros directory
+    shutil.copy(
+        "/home/ubuntu/gptee/perform.py",
+        "/home/ubuntu/ros_ws/src/ainex_example/scripts/perform.py",
+    )
+    cmd = [
+        "python3",
+        "/home/ubuntu/ros_ws/src/ainex_example/scripts/perform/perform.py",
+        action_name,
+    ]
+    try:
+        proc = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        )
+        stdout, stderr = proc.communicate()
+    except Exception as e:
+        return f"Error executing action {action_name}: {e}"
+    if proc.returncode != 0:
+        return f"Action {action_name} failed with error: {stderr}"
+    else:
+        return f"Action {action_name} completed. Output: {stdout}"
+
+
+def explore(direction: str) -> str:
+    # cmd = ["rosrun", "robot", "explore.py", direction]
+    # proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+    return f"I explored by moving in {direction}"
+
+
+# def perform(action_name: str) -> str:
+#     cmd = ["roslaunch", "ainex_example"]
+#     if action_name == "climb_stairs":
+#         cmd.extend(["climb_stairs_node.launch", "state:=climb_stairs"])
+#     elif action_name == "declimb_stairs":
+#         cmd.extend(["climb_stairs_node.launch", "state:=declimb_stairs"])
+#     elif action_name == "crawl_under":
+#         cmd.append("crawl_under_node.launch")
+#     elif action_name == "hurdles":
+#         cmd.append("hurdles_node.launch")
+#     elif action_name == "kick_ball":
+#         cmd.append("kick_ball_node.launch")
+#     elif action_name == "visual_patrol":
+#         cmd.append("visual_patrol_node.launch")
+#     else:
+#         return f"Unknown action {action_name}"
 
 
 TOOLS_DICT = {
-    "move_to": move_to,
-    "look_at": look_at,
+    "explore": explore,
+    "look": look,
     "perform": perform,
     "listen": listen,
     "speak": speak,
@@ -298,8 +338,9 @@ def choose_tool(
 
 if __name__ == "__main__":
     speak(GREETING)
-    base64_image = encode_image_from_path()
-    what_i_see = vision(base64_image)
+    what_i_see = look()
+    speak(what_i_see)
     what_i_hear = listen()
+    speak(what_i_hear)
     what_i_did = choose_tool(f"{what_i_see}. {what_i_hear}")
     speak(what_i_did)

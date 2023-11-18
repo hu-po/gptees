@@ -6,11 +6,11 @@ import requests
 
 MODEL: str = "gpt-4-vision-preview"
 MAX_TOKENS: int = 32
+VISION_OUTPUT_PATH: str = "/tmp/test.png"  # default image for test behavior
 
-def encode_image_from_path(image_path: str) -> str:
-  with open(image_path, "rb") as image_file:
-    return base64.b64encode(image_file.read()).decode('utf-8')
-
+def encode_image_from_path(image_path: str = VISION_OUTPUT_PATH) -> str:
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode("utf-8")
 
 def vision(
     prompt: str,
