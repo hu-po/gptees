@@ -250,23 +250,22 @@ def speak(
     device: str = AUDIO_DEVICE,
     save_to_file=True,
 ) -> str:
-    file_name = f"/tmp/tmp{hashlib.sha256(text.encode()).hexdigest()[:10]}.wav"
+    file_name = f"/tmp/tmp{hashlib.sha256(text.encode()).hexdigest()[:10]}.mp3"
     if not os.path.exists(file_name):
         response = CLIENT.audio.speech.create(model=model, voice=voice, input=text)
         byte_stream = io.BytesIO(response.content)
-        seg = AudioSegment.from_file(byte_stream, format="wav")
+        seg = AudioSegment.from_file(byte_stream, format="mp3")
         if save_to_file:
-            seg.export(file_name, format="wav")
+            seg.export(file_name, format="mp3")
             print(f"Saved audio to {file_name}")
     else:
         print(f"Audio already exists at {file_name}")
-        seg = AudioSegment.from_file(file_name, format="wav")
+        seg = AudioSegment.from_file(file_name, format="mp3")
     print(f"Playing audio: {text}")
     p = pyaudio.PyAudio()
     stream = p.open(
-        format=p.get_format_from_width(seg.sample_width),
-        channels=seg.channels,
-        rate=seg.frame_rate,
+        format=p.get_format_from_width(AUDIO_SAMPLE_RATE),
+        channels=AUDIO_CHANNELS,
         output=True,
         output_device_index=device,
     )
