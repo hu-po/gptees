@@ -172,7 +172,7 @@ def look(
     if not ret:
         return f"Could not capture an image from the webcam at {device}"
     cap.release()  # Release the webcam
-    _, buffer = frame.imencode(".jpg", frame)
+    _, buffer = cv2.imencode(".jpg", frame)
     base64_image = base64.b64encode(buffer).decode("utf-8")
     headers = {
         "Content-Type": "application/json",
