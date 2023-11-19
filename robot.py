@@ -30,7 +30,7 @@ VISION_PROMPT: str = ". ".join(
         # "You might be staring at the ceiling",
     ]
 )
-MAX_TOKENS_VISION: int = 32  # max tokens for reply
+MAX_TOKENS_VISION: int = 16  # max tokens for reply
 VISION_DEVICE_PATH: str = "/dev/video0"  # Camera device path
 # VISION_DEVICE_PATH: str = "/dev/usb_cam"  # Camera device path
 
@@ -48,14 +48,16 @@ AUDIO_OUTPUT_PATH: str = "/tmp/audio.wav"  # audio is constantly overwritten
 SYSTEM_MODEL: str = "gpt-4-1106-preview"
 SYSTEM_PROMPT: str = ". ".join(
     [
-        "You are the master node in a robot control system",
-        "As the master node, you decide what tools to use",
+        "You are the function master node in a robot control system",
+        "You monitor the robot log and decide when to run functions",
         "The robot's goals are to explore and understand the environment",
-        "If a human is visible, perform the greet action",
+        "The robot can observe the world through sight and sound",
+        "Make sure to often listen and look",
+        "If a human is visible, perform the greet action or speak to them",
         "If you hear a human, respond to them by speaking",
-        # "If the robot is looking at the ceiling, perform the get_up action",
-        "When in doubt, either listen or look",
-        "Try to be random in your movements",
+        "Try to be random in your movements when exploring",
+        # "A good default is to listen",
+        "Always pick a function to run, the other robot nodes depend on you",
     ]
 )
 SYSTEM_MAX_TOKENS: int = 32
@@ -204,7 +206,7 @@ def look(
     )
     content = response.json()["choices"][0]["message"]["content"]
     print(f"Vision response: {content}")
-    speak(f"I see {content}")
+    speak(content)
     return content
 
 
@@ -222,7 +224,6 @@ def listen(
         channels=channels,
     )
     sd.wait()  # Wait until recording is finished
-    speak("okay")
     print(f"Recording finished, saving to {output_path}")
     write(output_path, sample_rate, audio_data)  # Save as WAV file
     with open(output_path, "rb") as audio_file:
@@ -230,6 +231,7 @@ def listen(
             model=STT_MODEL, file=audio_file, response_format="text"
         )
     print(f"Transcript: {transcript}")
+    speak(f"{transcript}?")
     return transcript
 
 
@@ -238,7 +240,7 @@ def speak(
     model: str = TTS_MODEL,
     voice: str = VOICE,
     save_to_file=True,
-) -> None:
+) -> str:
     file_name = f"/tmp/tmp{hashlib.sha256(text.encode()).hexdigest()[:10]}.mp3"
     if not os.path.exists(file_name):
         response = CLIENT.audio.speech.create(model=model, voice=voice, input=text)
@@ -252,6 +254,7 @@ def speak(
         audio = AudioSegment.from_file(file_name, format="mp3")
     print(f"Playing audio: {text}")
     play(audio)
+    return text
 
 
 def perform(action_name: str) -> str:
@@ -327,7 +330,7 @@ def choose_tool(
         else:
             return f"Unknown tool {function_name}"
     else:
-        return "I do nothing"
+        return "... waiting ..."
 
 
 if __name__ == "__main__":
@@ -335,8 +338,4 @@ if __name__ == "__main__":
     o = look()
     o = listen()
     while True:
-        if not o:
-            o = listen()
         o = choose_tool(o)
-        if o:
-            speak(o)
