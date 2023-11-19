@@ -47,17 +47,17 @@ SYSTEM_MODEL: str = "gpt-4-1106-preview"
 SYSTEM_PROMPT: str = ". ".join(
     [
         "You are the master node in a robot control system",
-        "The user is the robot vision module",
         "As the master node, you decide what tools to use",
         "The robot's goals are to explore and understand the environment",
         "If a human is visible, perform the greet action",
+        "If you hear a human, respond to them by speaking",
         # "If the robot is looking at the ceiling, perform the get_up action",
-        "When in doubt, pick a random action!",
+        "When in doubt, either listen or look",
         "Try to be random in your movements",
     ]
 )
 SYSTEM_MAX_TOKENS: int = 32
-SYSTEM_TEMPERATURE: float = 0.0
+SYSTEM_TEMPERATURE: float = 0.3
 TOOLS = [
     {
         "type": "function",
@@ -125,7 +125,7 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "listen",
-            "description": "Listen for a specified duration",
+            "description": "Listen for a specified duration in seconds",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -243,7 +243,7 @@ def speak(
         audio = AudioSegment.from_file(file_name, format="mp3")
     print(f"Playing audio: {text}")
     play(audio)
-    return f"Speaking text: {text}"
+    return f"I spoke {text}"
 
 
 def perform(action_name: str) -> str:
@@ -267,31 +267,13 @@ def perform(action_name: str) -> str:
     if proc.returncode != 0:
         return f"Action {action_name} failed with error: {stderr}"
     else:
-        return f"Action {action_name} completed. Output: {stdout}"
+        return f"I performed {action_name} sucessfully. Output: {stdout}"
 
 
 def explore(direction: str) -> str:
     # cmd = ["rosrun", "robot", "explore.py", direction]
     # proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     return f"I explored by moving in {direction}"
-
-
-# def perform(action_name: str) -> str:
-#     cmd = ["roslaunch", "ainex_example"]
-#     if action_name == "climb_stairs":
-#         cmd.extend(["climb_stairs_node.launch", "state:=climb_stairs"])
-#     elif action_name == "declimb_stairs":
-#         cmd.extend(["climb_stairs_node.launch", "state:=declimb_stairs"])
-#     elif action_name == "crawl_under":
-#         cmd.append("crawl_under_node.launch")
-#     elif action_name == "hurdles":
-#         cmd.append("hurdles_node.launch")
-#     elif action_name == "kick_ball":
-#         cmd.append("kick_ball_node.launch")
-#     elif action_name == "visual_patrol":
-#         cmd.append("visual_patrol_node.launch")
-#     else:
-#         return f"Unknown action {action_name}"
 
 
 TOOLS_DICT = {
@@ -330,18 +312,19 @@ def choose_tool(
         function_callable = tools_dict.get(function_name)
         if function_callable:
             print(f"Calling {function_name} with {function_args}")
-            return function_callable(**function_args)
+            return f"I choose to {function_callable(**function_args)}"
         else:
             return f"Unknown tool {function_name}"
     else:
-        return "No tool chosen"
+        return "I do nothing"
 
 
 if __name__ == "__main__":
     speak(GREETING)
-    what_i_see = look()
-    speak(what_i_see)
-    what_i_hear = listen()
-    speak(what_i_hear)
-    what_i_did = choose_tool(f"{what_i_see}. {what_i_hear}")
-    speak(what_i_did)
+    while True:
+        speak("I am looking")
+        what_i_see = look()
+        speak("I am listening")
+        what_i_hear = listen()
+        what_i_did = choose_tool(f"{what_i_see}. {what_i_hear}")
+        speak(what_i_did)
