@@ -45,7 +45,7 @@ GREETING: str = "hello there"  # Greeting is spoken on start
 AUDIO_RECORD_SECONDS: int = 4  # Duration for audio recording
 AUDIO_SAMPLE_RATE: int = 16000  # Sample rate for audio recording
 AUDIO_CHANNELS: int = 1  # mono
-AUDIO_DEVICE: int = 1  # audio device index
+AUDIO_DEVICE: int = 0  # audio device index
 AUDIO_OUTPUT_PATH: str = "/tmp/audio.wav"  # recorded audio is constantly overwritten
 
 # System model chooses tools and actions to perform based on vision
