@@ -10,7 +10,7 @@ import cv2
 import requests
 from openai import OpenAI
 from pydub import AudioSegment
-from pydub.playback import play #, _play_with_ffplay
+from pydub.playback import play, _play_with_ffplay
 import sounddevice as sd
 from scipy.io.wavfile import write
 
@@ -259,8 +259,8 @@ def speak(
         print(f"Audio already exists at {file_name}")
         audio = AudioSegment.from_file(file_name, format="mp3")
     print(f"Playing audio: {text}")
-    # _play_with_ffplay(audio)
-    play(audio)
+    _play_with_ffplay(audio)
+    # play(audio)
     return text
 
 
