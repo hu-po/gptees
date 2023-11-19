@@ -31,6 +31,8 @@ VISION_PROMPT: str = ". ".join(
     ]
 )
 MAX_TOKENS_VISION: int = 16  # max tokens for reply
+IMAGE_WIDTH: int = 512  # width of image in pixels
+IMAGE_HEIGHT: int = 512  # height of image in pixels
 VISION_DEVICE_PATH: str = "/dev/video0"  # Camera device path
 # VISION_DEVICE_PATH: str = "/dev/usb_cam"  # Camera device path
 
@@ -169,10 +171,14 @@ def look(
     prompt: str = VISION_PROMPT,
     vision_model: str = VISION_MODEL,
     max_tokens: int = MAX_TOKENS_VISION,
+    width: int = IMAGE_WIDTH,
+    height: int = IMAGE_HEIGHT,
 ) -> str:
     speak("I am looking")
     print(f"Looking at {device}")
     cap = cv2.VideoCapture(device)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
     if not cap.isOpened():
         return f"Cannot open webcam at {device}"
     ret, frame = cap.read()  # Capture frame-by-frame
