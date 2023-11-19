@@ -1,4 +1,5 @@
 import base64
+import hashlib
 import io
 import json
 import os
@@ -237,8 +238,7 @@ def speak(
     voice: str = VOICE,
     save_to_file=True,
 ) -> None:
-    # Check if the file already exists
-    file_name = f"/tmp/test.{text[:10]}.mp3"
+    file_name = f"/tmp/tmp{hashlib.sha256(text.encode()).hexdigest()[:10]}.mp3"
     if not os.path.exists(file_name):
         response = CLIENT.audio.speech.create(model=model, voice=voice, input=text)
         byte_stream = io.BytesIO(response.content)
