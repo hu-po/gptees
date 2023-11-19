@@ -21,12 +21,12 @@ CLIENT: OpenAI = OpenAI()
 VISION_MODEL: str = "gpt-4-vision-preview"
 VISION_PROMPT: str = ". ".join(
     [
-        "You are the robot vision module",
-        "Describe what you see in brevity",
-        "If there are humans mention them and their location",
-        "If there are objects mention them and their location",
-        "You might be staring at the ceiling",
-        "If you don't know what you see, say so",
+        "Describe the scene and objects",
+        "You are a robot vision module",
+        "You are small and only 20cm off the ground",
+        "Focus on the most important things",
+        "If there are humans mention them and their relative position",
+        # "You might be staring at the ceiling",
     ]
 )
 MAX_TOKENS_VISION: int = 32  # max tokens for reply
@@ -331,9 +331,9 @@ def choose_tool(
 
 if __name__ == "__main__":
     speak(GREETING)
+    o = look()
+    o = listen()
     while True:
-        what_i_see = look()
-        what_i_hear = listen()
-        what_i_did = choose_tool(f"{what_i_see}. {what_i_hear}")
-        if what_i_did:
-            speak(what_i_did)
+        o = choose_tool(o)
+        if o:
+            speak(o)
