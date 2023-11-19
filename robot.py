@@ -9,8 +9,9 @@ import subprocess
 import cv2
 import requests
 from openai import OpenAI
+import pyaudio
 from pydub import AudioSegment
-from pydub.playback import play, _play_with_ffplay
+from pydub.utils import make_chunks
 import sounddevice as sd
 from scipy.io.wavfile import write
 
@@ -44,7 +45,8 @@ GREETING: str = "hello there"  # Greeting is spoken on start
 AUDIO_RECORD_SECONDS: int = 4  # Duration for audio recording
 AUDIO_SAMPLE_RATE: int = 16000  # Sample rate for audio recording
 AUDIO_CHANNELS: int = 1  # mono
-AUDIO_OUTPUT_PATH: str = "/tmp/audio.wav"  # audio is constantly overwritten
+AUDIO_DEVICE: int = 1  # audio device index
+AUDIO_OUTPUT_PATH: str = "/tmp/audio.wav"  # recorded audio is constantly overwritten
 
 # System model chooses tools and actions to perform based on vision
 SYSTEM_MODEL: str = "gpt-4-1106-preview"
@@ -245,22 +247,41 @@ def speak(
     text: str,
     model: str = TTS_MODEL,
     voice: str = VOICE,
+    device: str = AUDIO_DEVICE,
     save_to_file=True,
 ) -> str:
-    file_name = f"/tmp/tmp{hashlib.sha256(text.encode()).hexdigest()[:10]}.mp3"
+    file_name = f"/tmp/tmp{hashlib.sha256(text.encode()).hexdigest()[:10]}.wav"
     if not os.path.exists(file_name):
         response = CLIENT.audio.speech.create(model=model, voice=voice, input=text)
         byte_stream = io.BytesIO(response.content)
-        audio = AudioSegment.from_file(byte_stream, format="mp3")
+        seg = AudioSegment.from_file(byte_stream, format="wav")
         if save_to_file:
-            audio.export(file_name, format="mp3")
+            seg.export(file_name, format="wav")
             print(f"Saved audio to {file_name}")
     else:
         print(f"Audio already exists at {file_name}")
-        audio = AudioSegment.from_file(file_name, format="mp3")
+        seg = AudioSegment.from_file(file_name, format="wav")
     print(f"Playing audio: {text}")
-    _play_with_ffplay(audio)
-    # play(audio)
+    p = pyaudio.PyAudio()
+    stream = p.open(
+        format=p.get_format_from_width(seg.sample_width),
+        channels=seg.channels,
+        rate=seg.frame_rate,
+        output=True,
+        output_device_index=device,
+    )
+
+    # Just in case there were any exceptions/interrupts, we release the resource
+    # So as not to raise OSError: Device Unavailable should play() be used again
+    try:
+        # break audio into half-second chunks (to allows keyboard interrupts)
+        for chunk in make_chunks(seg, 500):
+            stream.write(chunk._data)
+    finally:
+        stream.stop_stream()
+        stream.close()
+
+        p.terminate()
     return text
 
 
