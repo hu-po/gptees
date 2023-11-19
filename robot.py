@@ -38,8 +38,8 @@ TTS_MODEL: str = "tts-1"  # Text-to-speech model
 STT_MODEL: str = "whisper-1"  # Speech-to-text model
 VOICE: str = "echo"  # (alloy, echo, fable, onyx, nova, and shimmer)
 GREETING: str = "hello there"  # Greeting is spoken on start
-AUDIO_RECORD_SECONDS: int = 6  # Duration for audio recording
-AUDIO_SAMPLE_RATE: int = 22100  # Sample rate for audio recording
+AUDIO_RECORD_SECONDS: int = 4  # Duration for audio recording
+AUDIO_SAMPLE_RATE: int = 16000  # Sample rate for audio recording
 AUDIO_CHANNELS: int = 1  # mono
 AUDIO_OUTPUT_PATH: str = "/tmp/audio.wav"  # audio is constantly overwritten
 
