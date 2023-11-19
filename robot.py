@@ -309,8 +309,11 @@ def choose_tool(
     print(f"Model response {response.choices[0].message.function_call}")
     if response.choices[0].finish_reason == "function_call":
         function_name = response.choices[0].message.function_call.name
+        print(f"Function name: {function_name}")
         function_args = json.loads(response.choices[0].message.function_call.arguments)
+        print(f"Function args: {function_args}")
         function_callable = tools_dict.get(function_name)
+        print(f"Function callable: {function_callable}")
         if function_callable:
             print(f"Calling {function_name} with {function_args}")
             return f"I choose to {function_callable(**function_args)}"
