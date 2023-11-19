@@ -92,6 +92,7 @@ TOOLS = [
         "function": {
             "name": "look",
             "description": "Take an image from the camera and use the robot vision module to describe it",
+            "parameters": {},
         },
     },
     {
