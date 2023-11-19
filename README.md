@@ -11,4 +11,5 @@ soundevice requires pyaudio which requires portaudio
 ```
 pip install sounddevice==0.4.6
 sudo apt-get install libportaudio2
+sudo apt-get install python3-pyaudio
 ```
