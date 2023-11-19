@@ -166,6 +166,8 @@ def look(
     vision_model: str = VISION_MODEL,
     max_tokens: int = MAX_TOKENS_VISION,
 ) -> str:
+    speak("I am looking")
+    print(f"Looking at {device}")
     cap = cv2.VideoCapture(device)
     if not cap.isOpened():
         return f"Cannot open webcam at {device}"
@@ -198,7 +200,10 @@ def look(
     response = requests.post(
         "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
     )
-    return response.json()["choices"][0]["message"]["content"]
+    content = response.json()["choices"][0]["message"]["content"]
+    print(f"Vision response: {content}")
+    speak(f"I see {content}")
+    return content
 
 
 def listen(
@@ -207,21 +212,23 @@ def listen(
     channels: int = AUDIO_CHANNELS,
     output_path: str = AUDIO_OUTPUT_PATH,
 ) -> str:
-    print(f"Recording for {duration} seconds.")
+    speak(f"listening for {duration} seconds")
+    print(f"Listening for {duration} seconds")
     audio_data = sd.rec(
         int(duration * sample_rate),
         samplerate=sample_rate,
         channels=channels,
     )
     sd.wait()  # Wait until recording is finished
-    print("Recording finished.")
+    speak("okay")
+    print(f"Recording finished, saving to {output_path}")
     write(output_path, sample_rate, audio_data)  # Save as WAV file
     with open(output_path, "rb") as audio_file:
         transcript = CLIENT.audio.transcriptions.create(
             model=STT_MODEL, file=audio_file, response_format="text"
         )
     print(f"Transcript: {transcript}")
-    return f"Listened for {duration} seconds, heard __{transcript}__"
+    return transcript
 
 
 def speak(
@@ -229,7 +236,7 @@ def speak(
     model: str = TTS_MODEL,
     voice: str = VOICE,
     save_to_file=True,
-) -> str:
+) -> None:
     # Check if the file already exists
     file_name = f"/tmp/test.{text[:10]}.mp3"
     if not os.path.exists(file_name):
@@ -244,7 +251,6 @@ def speak(
         audio = AudioSegment.from_file(file_name, format="mp3")
     print(f"Playing audio: {text}")
     play(audio)
-    return f"I spoke {text}"
 
 
 def perform(action_name: str) -> str:
@@ -316,7 +322,7 @@ def choose_tool(
         print(f"Function callable: {function_callable}")
         if function_callable:
             print(f"Calling {function_name} with {function_args}")
-            return f"I choose to {function_callable(**function_args)}"
+            return function_callable(**function_args)
         else:
             return f"Unknown tool {function_name}"
     else:
@@ -326,9 +332,8 @@ def choose_tool(
 if __name__ == "__main__":
     speak(GREETING)
     while True:
-        speak("I am looking")
         what_i_see = look()
-        speak("I am listening")
         what_i_hear = listen()
         what_i_did = choose_tool(f"{what_i_see}. {what_i_hear}")
-        speak(what_i_did)
+        if what_i_did:
+            speak(what_i_did)
