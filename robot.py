@@ -62,17 +62,17 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "explore",
-            "description": "Move the robot using a specified direction",
+            "description": "Explore the world in a specified direction",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "direction": {
                         "type": "string",
                         "enum": [
-                            "forward",
-                            "backward",
-                            "left",
-                            "right",
+                            "move_forward",
+                            "move_backward",
+                            "move_left",
+                            "move_right",
                             "rotate_left",
                             "rotate_right",
                             "look_up",
@@ -248,7 +248,7 @@ def speak(
 def perform(action_name: str) -> str:
     # Copy over local file to ros directory
     shutil.copy(
-        "/home/ubuntu/gptee/perform.py",
+        "/home/ubuntu/gptees/perform.py",
         "/home/ubuntu/ros_ws/src/ainex_example/scripts/perform.py",
     )
     cmd = [
