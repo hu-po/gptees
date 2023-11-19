@@ -45,7 +45,7 @@ GREETING: str = "hello there"  # Greeting is spoken on start
 AUDIO_RECORD_SECONDS: int = 4  # Duration for audio recording
 AUDIO_SAMPLE_RATE: int = 16000  # Sample rate for audio recording
 AUDIO_CHANNELS: int = 1  # mono
-AUDIO_DEVICE: int = 0  # audio device index
+AUDIO_DEVICE: int = 1  # audio device index
 AUDIO_OUTPUT_PATH: str = "/tmp/audio.wav"  # recorded audio is constantly overwritten
 
 # System model chooses tools and actions to perform based on vision
@@ -166,6 +166,7 @@ TOOLS = [
     },
 ]
 FUNCTIONS = [tool["function"] for tool in TOOLS]
+DEFAULT_FUNCTION: str = "listen"
 
 
 def look(
@@ -332,6 +333,7 @@ def choose_tool(
     system: str = SYSTEM_PROMPT,
     functions: list = FUNCTIONS,
     tools_dict: dict = TOOLS_DICT,
+    default_function: str = DEFAULT_FUNCTION,
 ) -> str:
     print(f"Choosing tool for prompt: {prompt}")
     response = CLIENT.chat.completions.create(
@@ -345,17 +347,18 @@ def choose_tool(
         max_tokens=max_tokens,
     )
     print(f"Model response {response.choices[0].message.function_call}")
-    function_name = response.choices[0].message.function_call.name
-    print(f"Function name: {function_name}")
-    function_args = json.loads(response.choices[0].message.function_call.arguments)
-    print(f"Function args: {function_args}")
-    function_callable = tools_dict.get(function_name)
-    print(f"Function callable: {function_callable}")
-    if function_callable:
-        print(f"Calling {function_name} with {function_args}")
-        return function_callable(**function_args)
+    if response.choices[0].message.function_call is None:
+        print(f"Defaulting to {default_function}")
+        return tools_dict.get(default_function)()
     else:
-        return f"Unknown tool {function_name}"
+        function_name = response.choices[0].message.function_call.name
+        print(f"Function name: {function_name}")
+        function_args = json.loads(response.choices[0].message.function_call.arguments)
+        print(f"Function args: {function_args}")
+        function_callable = tools_dict.get(function_name)
+        if not function_callable:
+            return f"Unknown tool {function_name}"
+        return function_callable(**function_args)
 
 
 if __name__ == "__main__":
