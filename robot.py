@@ -29,7 +29,8 @@ VISION_PROMPT: str = ". ".join(
     ]
 )
 MAX_TOKENS_VISION: int = 32  # max tokens for reply
-VISION_DEVICE_PATH: str = "/dev/usb_cam"  # Camera device path
+VISION_DEVICE_PATH: str = "/dev/video0"  # Camera device path
+# VISION_DEVICE_PATH: str = "/dev/usb_cam"  # Camera device path
 
 # Audio models
 TTS_MODEL: str = "tts-1"  # Text-to-speech model
