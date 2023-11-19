@@ -26,6 +26,7 @@ VISION_PROMPT: str = ". ".join(
         "You are small and only 20cm off the ground",
         "Focus on the most important things",
         "If there are humans mention them and their relative position",
+        "do not mention the image, save tokens by directly describing "
         # "You might be staring at the ceiling",
     ]
 )
@@ -334,6 +335,8 @@ if __name__ == "__main__":
     o = look()
     o = listen()
     while True:
+        if not o:
+            o = listen()
         o = choose_tool(o)
         if o:
             speak(o)
