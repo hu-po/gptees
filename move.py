@@ -12,7 +12,7 @@ args = argparser.parse_args()
 def move(move_name: str) -> str:
     rospy.init_node('simple_gait_control_demo')
     gait_manager = GaitManager()
-    rospy.sleep(0.2)
+    # rospy.sleep(0.2)
     print("GaitManager initialized.")
     
 # param step_velocity: Speed selection has three levels: 1, 2, 3, and 4, with speed decreasing from fast to slow.
@@ -69,7 +69,7 @@ def move(move_name: str) -> str:
     print(f"Moving {move_name}...")
     gait_manager.move(speed, x_amplitude, y_amplitude, rotation_angle, arm_swing_degree, step_num=num_steps)  # 控制行走步数
     print(f"Movement completed.")
-    rospy.sleep(0.2)
+    # rospy.sleep(0.2)
     print(f"Stopping GaitManager...")
     gait_manager.stop()
     print(f"GaitManager stopped.")
