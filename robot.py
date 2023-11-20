@@ -33,8 +33,8 @@ VISION_PROMPT: str = ". ".join(
 MAX_TOKENS_VISION: int = 16  # max tokens for reply
 IMAGE_WIDTH: int = 512  # width of image in pixels
 IMAGE_HEIGHT: int = 512  # height of image in pixels
-VISION_DEVICE_PATH: str = "/dev/video0"  # Camera device path
-# VISION_DEVICE_PATH: str = "/dev/usb_cam"  # Camera device path
+# VISION_DEVICE_PATH: str = "/dev/video0"  # Camera device path on igigi
+VISION_DEVICE_PATH: str = "/dev/usb_cam"  # Camera device path on humanoid
 
 # Audio models
 TTS_MODEL: str = "tts-1"  # Text-to-speech model
@@ -163,6 +163,9 @@ FUNCTIONS = [
     },
 ]
 DEFAULT_FUNCTION: str = "listen"
+DEFAULT_ACTION_NAME: str = "greet"
+DEFAULT_MOVE_DIRECTION: str = "forward"
+DEFAULT_LOOK_DIRECTION: str = "forward"
 
 def listen(
     duration: int = AUDIO_RECORD_SECONDS,
@@ -248,17 +251,17 @@ def robot_command(command:str, filename:str, logstr:str):
         print(f"Robot command {command} sucessfully. Output: {stdout}")
         return f"{logstr} {command}"
     
-def perform(command: str):
-    return robot_command(command, "perform.py", "Performed action")
+def perform(action_name: str = DEFAULT_ACTION_NAME) -> str:
+    return robot_command(action_name, "perform.py", "Performed action")
 
-def move(command: str):
-    return robot_command(command, "move.py", "Moved")
+def move(direction: str = DEFAULT_MOVE_DIRECTION) -> str:
+    return robot_command(direction, "move.py", "Moved")
 
-def look_at(command: str):
-    return robot_command(command, "look_at.py", "Looked at ")
+def look_at(direction: str = DEFAULT_LOOK_DIRECTION) -> str:
+    return robot_command(direction, "look_at.py", "Looked at ")
 
 def look(
-    direction: str = "forward",
+    direction: str = DEFAULT_LOOK_DIRECTION,
     device: str = VISION_DEVICE_PATH,
     prompt: str = VISION_PROMPT,
     vision_model: str = VISION_MODEL,
