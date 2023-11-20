@@ -273,8 +273,8 @@ def look(
     speak(look_at(direction))
     print(f"Looking at {device}")
     cap = cv2.VideoCapture(device)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+    # cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
     if not cap.isOpened():
         return f"Cannot open webcam at {device}"
     ret, frame = cap.read()  # Capture frame-by-frame
