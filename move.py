@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # encoding: utf-8
-# import time
 import argparse
 import rospy
 from ainex_kinematics.gait_manager import GaitManager

@@ -36,6 +36,7 @@ IMAGE_WIDTH: int = 512  # width of image in pixels
 IMAGE_HEIGHT: int = 512  # height of image in pixels
 # VISION_DEVICE_PATH: str = "/dev/video0"  # Camera device path on igigi
 VISION_DEVICE_PATH: str = "/dev/usb_cam"  # Camera device path on humanoid
+IMAGE_OUTPUT_FILENAME: str = "image.jpg"  # Image is constantly overwritten
 
 # Audio models
 TTS_MODEL: str = "tts-1"  # Text-to-speech model
@@ -261,26 +262,22 @@ def move(direction: str = DEFAULT_MOVE_DIRECTION) -> str:
 def look_at(direction: str = DEFAULT_LOOK_DIRECTION) -> str:
     return robot_command(direction, "look_at.py", "Looked at ")
 
+def image() -> str:
+    return robot_command(IMAGE_OUTPUT_FILENAME, "image.py", "Captured image")
+
 def look(
     direction: str = DEFAULT_LOOK_DIRECTION,
     device: str = VISION_DEVICE_PATH,
     prompt: str = VISION_PROMPT,
     vision_model: str = VISION_MODEL,
     max_tokens: int = MAX_TOKENS_VISION,
-    width: int = IMAGE_WIDTH,
-    height: int = IMAGE_HEIGHT,
+    image_path: str = IMAGE_OUTPUT_FILENAME,
 ) -> str:
     speak(look_at(direction))
     print(f"Looking at {device}")
-    cap = cv2.VideoCapture(device)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-    if not cap.isOpened():
-        return f"Cannot open webcam at {device}"
-    ret, frame = cap.read()  # Capture frame-by-frame
-    if not ret:
-        return f"Could not capture an image from the webcam at {device}"
-    cap.release()  # Release the webcam
+    frame = cv2.imread(image_path)
+    if frame is None:
+        return f"Could not read the image from {image_path}"
     _, buffer = cv2.imencode(".jpg", frame)
     base64_image = base64.b64encode(buffer).decode("utf-8")
     headers = {
