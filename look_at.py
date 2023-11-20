@@ -28,7 +28,7 @@ DOWN_SERVO_POSITIONS = [[23, 500], [24, 400]]
 def image_callback(msg):
     bridge = CvBridge()
     cv_image = bridge.imgmsg_to_cv2(msg, "bgr8")
-    cv2.imwrite(args.command, cv_image)
+    cv2.imwrite(IMAGE_OUTPUT_FILENAME, cv_image)
     rospy.signal_shutdown("Image saved")
 
 
