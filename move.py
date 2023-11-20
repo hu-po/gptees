@@ -10,6 +10,7 @@ argparser.add_argument('--move', type=str, required=True, help='move name')
 args = argparser.parse_args()
 
 def move(move_name: str) -> str:
+    rospy.init_node('simple_gait_control_demo')
     gait_manager = GaitManager()
     rospy.sleep(0.2)
     print("GaitManager initialized.")
