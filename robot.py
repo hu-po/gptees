@@ -59,8 +59,8 @@ SYSTEM_PROMPT: str = ". ".join(
     [
         "You are the function master node in a robot control system",
         "You decide when to run robot functions on behalf of the other robot nodes",
-        "Do not repeat functions",
-        "Use the log to understand previous functions",
+        "Use the log to avoid previous functions",
+        "Do not use the same functions as before",
         "You can move to explore and understand the environment",
         # "The robot can observe the world through sight",
         # "The robot can observe the world through sound",
@@ -69,8 +69,9 @@ SYSTEM_PROMPT: str = ". ".join(
         "If a human is visible, perform the greet action or speak to them",
         "If you hear a human, respond to them by speaking",
         "Try to move towards interesting things",
-        # "Always pick a function to run",
+        "Always pick a function to run",
         "The other robot nodes depend on you",
+        "Do not repeat functions",
     ]
 )
 if DEAF:
@@ -80,7 +81,7 @@ if BLIND:
 if MUTE:
     SYSTEM_PROMPT += " You are mute. Do not speak."
 SYSTEM_MAX_TOKENS: int = 16
-SYSTEM_TEMPERATURE: float = 0.3
+SYSTEM_TEMPERATURE: float = 0.0
 SYSTEM_LOG_LENGTH: int = 4  # Number of lines to keep in the log
 FUNCTIONS = [
     {
@@ -331,7 +332,10 @@ def do(
     repertoire: dict = REPERTOIRE,
     default_function: str = DEFAULT_FUNCTION,
 ) -> str:
-    print(f"Prompt for do: {prompt}")
+    print("Do with prompt:")
+    print("--------------------")
+    print(prompt)
+    print("--------------------")
     response = CLIENT.chat.completions.create(
         model=model,
         messages=[
