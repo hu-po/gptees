@@ -10,6 +10,7 @@ import requests
 from openai import OpenAI
 import pyaudio
 from pydub import AudioSegment
+from pydub.playback import play
 from pydub.utils import make_chunks
 import sounddevice as sd
 from scipy.io.wavfile import write
@@ -212,32 +213,33 @@ def speak(
     else:
         print(f"Audio already exists at {file_name}")
         seg = AudioSegment.from_file(file_name, format="mp3")
-    print(f"Playing audio: {text}")
-    p = pyaudio.PyAudio()
-    print(f"Audio device count: {p.get_device_count()}")
-    print(f"Audio device info: {p.get_device_info_by_index(device)}")
-    print(f"Segment sample width: {seg.sample_width}")
-    print(f"Segment channels: {seg.channels}")
-    print(f"Segment frame rate: {seg.frame_rate}")
-    stream = p.open(
-        format=p.get_format_from_width(seg.sample_width),
-        channels=seg.channels,
-        rate=seg.frame_rate,
-        output=True,
-        output_device_index=device,
-    )
+    play(seg)
+    # print(f"Playing audio: {text}")
+    # p = pyaudio.PyAudio()
+    # print(f"Audio device count: {p.get_device_count()}")
+    # print(f"Audio device info: {p.get_device_info_by_index(device)}")
+    # print(f"Segment sample width: {seg.sample_width}")
+    # print(f"Segment channels: {seg.channels}")
+    # print(f"Segment frame rate: {seg.frame_rate}")
+    # stream = p.open(
+    #     format=p.get_format_from_width(seg.sample_width),
+    #     channels=seg.channels,
+    #     rate=seg.frame_rate,
+    #     output=True,
+    #     output_device_index=device,
+    # )
 
-    # Just in case there were any exceptions/interrupts, we release the resource
-    # So as not to raise OSError: Device Unavailable should play() be used again
-    try:
-        # break audio into half-second chunks (to allows keyboard interrupts)
-        for chunk in make_chunks(seg, 500):
-            stream.write(chunk._data)
-    finally:
-        stream.stop_stream()
-        stream.close()
+    # # Just in case there were any exceptions/interrupts, we release the resource
+    # # So as not to raise OSError: Device Unavailable should play() be used again
+    # try:
+    #     # break audio into half-second chunks (to allows keyboard interrupts)
+    #     for chunk in make_chunks(seg, 500):
+    #         stream.write(chunk._data)
+    # finally:
+    #     stream.stop_stream()
+    #     stream.close()
 
-        p.terminate()
+    #     p.terminate()
     return f"Spoke {text}"
 
 def robot_command(command:str, filename:str, logstr:str):
