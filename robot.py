@@ -216,7 +216,7 @@ def speak(
     p = pyaudio.PyAudio()
     stream = p.open(
         format=p.get_format_from_width(seg.sample_width),
-        channels=seg.channels,
+        channels=AUDIO_CHANNELS,# seg.channels,
         rate=seg.frame_rate,
         output=True,
         output_device_index=device,
