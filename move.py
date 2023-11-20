@@ -6,7 +6,7 @@ import rospy
 from ainex_kinematics.gait_manager import GaitManager
 
 argparser = argparse.ArgumentParser()
-argparser.add_argument("--move", type=str, required=True, help="move name")
+argparser.add_argument("--command", type=str, required=True)
 args = argparser.parse_args()
 
 # param step_velocity: Speed selection has three levels: 1, 2, 3, and 4, with speed decreasing from fast to slow.
@@ -24,7 +24,7 @@ STEP_NUM: int = 2  # I see numbers like 0 and 3 in the code
 
 
 def move(
-    move_name: str,
+    command: str,
     speed: int = SPEED,
     x_amplitude: float = X_AMPLITUDE,
     y_amplitude: float = Y_AMPLITUDE,
@@ -36,32 +36,32 @@ def move(
     gait_manager = GaitManager()
     # rospy.sleep(0.2)
     print("GaitManager initialized.")
-    assert move_name in [
+    assert command in [
         "forward",
         "backward",
         "left",
         "right",
         "rotate left",
         "rotate right",
-    ], f"Unknown move name: {move_name}"
-    if move_name == "forward":
+    ], f"Unknown move name: {command}"
+    if command == "forward":
         y_amplitude = 0.0
         rotation_angle = 0
-    elif move_name == "backward":
+    elif command == "backward":
         x_amplitude = -x_amplitude
         y_amplitude = 0.0
         rotation_angle = 0
-    elif move_name == "left":
+    elif command == "left":
         x_amplitude = 0.0
         rotation_angle = 0
-    elif move_name == "right":
+    elif command == "right":
         x_amplitude = 0.0
         y_amplitude = -y_amplitude
         rotation_angle = 0
-    elif move_name == "rotate left":
+    elif command == "rotate left":
         x_amplitude = 0.0
         y_amplitude = 0.0
-    elif move_name == "rotate right":
+    elif command == "rotate right":
         x_amplitude = 0.0
         y_amplitude = 0.0
         rotation_angle = -rotation_angle
@@ -70,7 +70,7 @@ def move(
     print(f"y_amplitude set to {y_amplitude}")
     print(f"rotation_angle set to {rotation_angle}")
     print(f"Number of steps {step_num}")
-    print(f"Moving {move_name}...")
+    print(f"Moving {command}...")
     gait_manager.move(
         speed,
         x_amplitude,
@@ -87,4 +87,4 @@ def move(
 
 
 if __name__ == "__main__":
-    move(args.move)
+    move(args.command)

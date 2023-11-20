@@ -5,7 +5,7 @@ import argparse
 from ainex_kinematics.motion_manager import MotionManager
 
 argparser = argparse.ArgumentParser()
-argparser.add_argument('--command', type=str, required=True, help='command name')
+argparser.add_argument('--command', type=str, required=True)
 args = argparser.parse_args()
 
 def perform(command: str) -> str:

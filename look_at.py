@@ -5,9 +5,16 @@ import argparse
 from ainex_kinematics.motion_manager import MotionManager
 
 argparser = argparse.ArgumentParser()
-argparser.add_argument("--command", type=str, required=True, help="command name")
+argparser.add_argument("--command", type=str, required=True)
 args = argparser.parse_args()
 
+# Servo 23 is the rotation/pan neck servo range [300, 600]
+# Servo 24 is the tilt/vertical neck servo range [260, 650]
+FORWARD_SERVO_POSITIONS = [[23, 500], [24, 500]]
+LEFT_SERVO_POSITIONS = [[23, 400], [24, 500]]
+RIGHT_SERVO_POSITIONS = [[23, 600], [24, 500]]
+UP_SERVO_POSITIONS = [[23, 500], [24, 650]]
+DOWN_SERVO_POSITIONS = [[23, 500], [24, 450]]
 
 def look_at(command: str) -> str:
     print(f"Look_at {command}")
@@ -23,15 +30,16 @@ def look_at(command: str) -> str:
         "down",
     ], f"Unknown look_at command: {command}"
     if command == "forward":
-        motion_manager.set_servos_position(500, [[23, 500], [24, 500]])
-    if command == "left":
-        motion_manager.set_servos_position(500, [[23, 500], [24, 1000]])
-    if command == "right":
-        motion_manager.set_servos_position(500, [[23, 1000], [24, 500]])
-    if command == "up":
-        motion_manager.set_servos_position(500, [[23, 500], [24, 500]])
-    if command == "down":
-        motion_manager.set_servos_position(500, [[23, 500], [24, 500]])
+        servo_pos = FORWARD_SERVO_POSITIONS
+    elif command == "left":
+        servo_pos = LEFT_SERVO_POSITIONS
+    elif command == "right":
+        servo_pos = RIGHT_SERVO_POSITIONS
+    elif command == "up":
+        servo_pos = UP_SERVO_POSITIONS
+    elif command == "down":
+        servo_pos = DOWN_SERVO_POSITIONS
+    motion_manager.set_servos_position(500, servo_pos)
     print(f"Look_at {command} completed.")
 
 

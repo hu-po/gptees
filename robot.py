@@ -66,6 +66,7 @@ SYSTEM_PROMPT: str = ". ".join(
 )
 SYSTEM_MAX_TOKENS: int = 32
 SYSTEM_TEMPERATURE: float = 0.3
+SYSTEM_LOG_LENGTH: int = 4  # Number of lines to keep in the log
 FUNCTIONS = [
     {
         "name": "move",
@@ -185,7 +186,7 @@ def listen(
         )
     print(f"Transcript: {transcript}")
     speak(f"{transcript}?")
-    return transcript
+    return f"Listened for {duration} seconds and heard {transcript}"
 
 
 def speak(
@@ -227,7 +228,7 @@ def speak(
     #     stream.close()
 
     #     p.terminate()
-    return text
+    return f"Spoke {text}"
 
 def robot_command(command:str, filename:str, logstr:str):
     _path = os.path.join(os.path.dirname(os.path.realpath(__file__)), filename)
@@ -304,7 +305,7 @@ def look(
     content = response.json()["choices"][0]["message"]["content"]
     print(f"Vision response: {content}")
     speak(content)
-    return content
+    return f"Looked {direction} and saw {content}"
 
 
 REPERTOIRE = {
@@ -353,8 +354,11 @@ def do(
 
 
 if __name__ == "__main__":
+    log = []
     speak(GREETING)
-    o = look()
-    o = listen()
+    log.append(look())
+    log.append(listen())
     while True:
-        o = do(o)
+        if len(log) > SYSTEM_LOG_LENGTH:
+            log = log[-SYSTEM_LOG_LENGTH:]
+        log.append(do("\n".join(log)))
