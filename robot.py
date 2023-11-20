@@ -1,3 +1,4 @@
+# import argparse
 import base64
 import hashlib
 import io
@@ -13,6 +14,9 @@ from pydub.playback import play
 import sounddevice as sd
 from scipy.io.wavfile import write
 
+# argparser = argparse.ArgumentParser()
+# argparser.add_argument("--command", type=str, required=True)
+# args = argparser.parse_args()
 
 CLIENT: OpenAI = OpenAI()
 
@@ -53,6 +57,8 @@ AUDIO_OUTPUT_PATH: str = "/tmp/audio.wav"  # recorded audio is constantly overwr
 MUTE: bool = True  # Mute audio output
 SAVE_AUDIO: bool = True  # Speaking audio can be cached in /tmp for faster playback
 DEAF: bool = False  # Do not listen for audio input
+
+
 
 # System model chooses functions based on logs
 SYSTEM_MODEL: str = "gpt-4-1106-preview"
