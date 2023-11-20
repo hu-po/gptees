@@ -3,7 +3,6 @@ import hashlib
 import io
 import json
 import os
-import shutil
 import subprocess
 
 import cv2
@@ -288,16 +287,9 @@ def speak(
 
 
 def perform(action_name: str) -> str:
-    # # Copy over local file to ros directory
-    # shutil.copy(
-    #     "/home/ubuntu/gptees/perform.py",
-    #     "/home/ubuntu/ros_ws/src/ainex_example/scripts/perform.py",
-    # )
-    cmd = [
-        "python3",
-        "/home/ubuntu/ros_ws/src/ainex_example/scripts/perform/perform.py",
-        action_name,
-    ]
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    perform_path = os.path.join(current_dir, "perform.py")
+    cmd = ["python3", perform_path, "--action", action_name]
     try:
         proc = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
