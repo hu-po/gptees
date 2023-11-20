@@ -20,7 +20,7 @@ CLIENT: OpenAI = OpenAI()
 VISION_MODEL: str = "gpt-4-vision-preview"
 VISION_PROMPT: str = ". ".join(
     [
-        "Describe the scene and objects",
+        "Describe the scene, objects, and characters",
         "You are a robot vision module",
         "You are small and only 20 centimeters off the ground",
         "Focus on the most important things",
@@ -44,7 +44,8 @@ TTS_MODEL: str = "tts-1"  # Text-to-speech model
 STT_MODEL: str = "whisper-1"  # Speech-to-text model
 VOICE: str = "echo"  # (alloy, echo, fable, onyx, nova, and shimmer)
 GREETING: str = "hello there"  # Greeting is spoken on start
-AUDIO_RECORD_SECONDS: int = 6  # Duration for audio recording
+AUDIO_RECORD_TIME_MIN: int = 3  # Minimum duration for audio recording
+AUDIO_RECORD_TIME_MAX: int = 8  # Maximum duration for audio recording
 # AUDIO_SAMPLE_RATE: int = 44100  # Sample rate for quality audio recording
 AUDIO_SAMPLE_RATE: int = 16000  # Sample rate for speedy audio recording
 AUDIO_CHANNELS: int = 1  # mono
@@ -64,8 +65,8 @@ SYSTEM_PROMPT: str = ". ".join(
         "You can move to explore and understand the environment",
         # "The robot can observe the world through sight",
         # "The robot can observe the world through sound",
-        # "Make sure to often listen and look",
-        # "A good default is to listen",
+        "Make sure to often listen",
+        "A good default is to listen",
         "If a human is visible, perform the greet action or speak to them",
         "If you hear a human, respond to them by speaking",
         "Try to move towards interesting things",
@@ -157,8 +158,8 @@ FUNCTIONS = [
             "properties": {
                 "duration": {
                     "type": "integer",
-                    "minimum": 1,
-                    "maximum": 10,
+                    "minimum": AUDIO_RECORD_TIME_MIN,
+                    "maximum": AUDIO_RECORD_TIME_MAX,
                 },
             },
             "required": ["duration"],
@@ -185,7 +186,7 @@ DEFAULT_LOOK_DIRECTION: str = "forward"
 
 
 def listen(
-    duration: int = AUDIO_RECORD_SECONDS,
+    duration: int = AUDIO_RECORD_TIME_MIN,
     sample_rate: int = AUDIO_SAMPLE_RATE,
     channels: int = AUDIO_CHANNELS,
     output_path: str = AUDIO_OUTPUT_PATH,
