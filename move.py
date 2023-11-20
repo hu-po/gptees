@@ -63,7 +63,7 @@ def move(move_name: str) -> str:
     print(f"y_amplitude set to {y_amplitude}")
     print(f"rotation_angle set to {rotation_angle}")
 
-    num_steps = 3
+    num_steps = 1
     print(f"num_steps set to {num_steps}")
     
     print(f"Moving {move_name}...")
