@@ -63,6 +63,7 @@ def look_at(command: str) -> str:
         servo_pos = DOWN_SERVO_POSITIONS
     motion_manager.set_servos_position(500, servo_pos)
     print(f"Look_at {command} completed.")
+    rospy.sleep(0.2)
     save_one_image()
     print("Image saved.")
 
