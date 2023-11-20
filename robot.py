@@ -43,8 +43,8 @@ STT_MODEL: str = "whisper-1"  # Speech-to-text model
 VOICE: str = "echo"  # (alloy, echo, fable, onyx, nova, and shimmer)
 GREETING: str = "hello there"  # Greeting is spoken on start
 AUDIO_RECORD_SECONDS: int = 4  # Duration for audio recording
-AUDIO_SAMPLE_RATE: int = 44100  # Sample rate for audio recording
-# AUDIO_SAMPLE_RATE: int = 16000  # Sample rate for audio recording
+# AUDIO_SAMPLE_RATE: int = 44100  # Sample rate for quality audio recording
+AUDIO_SAMPLE_RATE: int = 16000  # Sample rate for speedy audio recording
 AUDIO_CHANNELS: int = 1  # mono
 AUDIO_DEVICE: int = 1  # audio device index
 AUDIO_OUTPUT_PATH: str = "/tmp/audio.wav"  # recorded audio is constantly overwritten
@@ -263,27 +263,27 @@ def speak(
     else:
         print(f"Audio already exists at {file_name}")
         seg = AudioSegment.from_file(file_name, format="mp3")
-    print(f"Playing audio: {text}")
-    p = pyaudio.PyAudio()
-    stream = p.open(
-        format=p.get_format_from_width(seg.sample_width),
-        channels=seg.channels,
-        rate=seg.frame_rate,
-        output=True,
-        output_device_index=device,
-    )
+    # print(f"Playing audio: {text}")
+    # p = pyaudio.PyAudio()
+    # stream = p.open(
+    #     format=p.get_format_from_width(seg.sample_width),
+    #     channels=seg.channels,
+    #     rate=seg.frame_rate,
+    #     output=True,
+    #     output_device_index=device,
+    # )
 
-    # Just in case there were any exceptions/interrupts, we release the resource
-    # So as not to raise OSError: Device Unavailable should play() be used again
-    try:
-        # break audio into half-second chunks (to allows keyboard interrupts)
-        for chunk in make_chunks(seg, 500):
-            stream.write(chunk._data)
-    finally:
-        stream.stop_stream()
-        stream.close()
+    # # Just in case there were any exceptions/interrupts, we release the resource
+    # # So as not to raise OSError: Device Unavailable should play() be used again
+    # try:
+    #     # break audio into half-second chunks (to allows keyboard interrupts)
+    #     for chunk in make_chunks(seg, 500):
+    #         stream.write(chunk._data)
+    # finally:
+    #     stream.stop_stream()
+    #     stream.close()
 
-        p.terminate()
+    #     p.terminate()
     return text
 
 
