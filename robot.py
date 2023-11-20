@@ -288,11 +288,11 @@ def speak(
 
 
 def perform(action_name: str) -> str:
-    # Copy over local file to ros directory
-    shutil.copy(
-        "/home/ubuntu/gptees/perform.py",
-        "/home/ubuntu/ros_ws/src/ainex_example/scripts/perform.py",
-    )
+    # # Copy over local file to ros directory
+    # shutil.copy(
+    #     "/home/ubuntu/gptees/perform.py",
+    #     "/home/ubuntu/ros_ws/src/ainex_example/scripts/perform.py",
+    # )
     cmd = [
         "python3",
         "/home/ubuntu/ros_ws/src/ainex_example/scripts/perform/perform.py",

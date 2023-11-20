@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # encoding: utf-8
-import time
+# import time
 import argparse
 from ainex_kinematics.motion_manager import MotionManager
 
@@ -13,13 +13,13 @@ def perform(action_name: str) -> str:
     motion_manager = MotionManager('/home/ubuntu/software/ainex_controller/ActionGroups')
     print("MotionManager initialized.")
     
-    motion_manager.set_servos_position(500, [[23, 300]])
-    print("Set servos position to 300.")
-    time.sleep(0.5) 
+    # motion_manager.set_servos_position(500, [[23, 300]])
+    # print("Set servos position to 300.")
+    # time.sleep(0.5) 
 
-    motion_manager.set_servos_position(500, [[23, 500], [24, 500]])
-    print("Set servos position to 500.")
-    time.sleep(0.5)
+    # motion_manager.set_servos_position(500, [[23, 500], [24, 500]])
+    # print("Set servos position to 500.")
+    # time.sleep(0.5)
     
     assert action_name in [
         'left_shot',
