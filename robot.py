@@ -214,9 +214,14 @@ def speak(
         seg = AudioSegment.from_file(file_name, format="mp3")
     print(f"Playing audio: {text}")
     p = pyaudio.PyAudio()
+    print(f"Audio device count: {p.get_device_count()}")
+    print(f"Audio device info: {p.get_device_info_by_index(device)}")
+    print(f"Segment sample width: {seg.sample_width}")
+    print(f"Segment channels: {seg.channels}")
+    print(f"Segment frame rate: {seg.frame_rate}")
     stream = p.open(
         format=p.get_format_from_width(seg.sample_width),
-        channels=AUDIO_CHANNELS,# seg.channels,
+        channels=seg.channels,
         rate=seg.frame_rate,
         output=True,
         output_device_index=device,
