@@ -5,14 +5,14 @@ import argparse
 from ainex_kinematics.motion_manager import MotionManager
 
 argparser = argparse.ArgumentParser()
-argparser.add_argument('--action', type=str, required=True, help='action name')
+argparser.add_argument('--command', type=str, required=True, help='command name')
 args = argparser.parse_args()
 
-def perform(action_name: str) -> str:
-    print(f"Performing action: {action_name}")
+def perform(command: str) -> str:
+    print(f"Performing action: {command}")
     motion_manager = MotionManager('/home/ubuntu/software/ainex_controller/ActionGroups')
     print("MotionManager initialized.")
-    assert action_name in [
+    assert command in [
         'left_shot',
         'right_shot',
         'stand',
@@ -22,9 +22,9 @@ def perform(action_name: str) -> str:
         'four',
         'hand_back',
         'greet',
-    ], f"Unknown action: {action_name}"
-    motion_manager.run_action(action_name)
-    print(f"Action {action_name} completed.")
+    ], f"Unknown action: {command}"
+    motion_manager.run_action(command)
+    print(f"Action {command} completed.")
 
 if __name__ == '__main__':
-    perform(args.action)
+    perform(args.command)

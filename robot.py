@@ -48,7 +48,7 @@ AUDIO_CHANNELS: int = 1  # mono
 AUDIO_DEVICE: int = 1  # audio device index
 AUDIO_OUTPUT_PATH: str = "/tmp/audio.wav"  # recorded audio is constantly overwritten
 
-# System model chooses tools and actions to perform based on vision
+# System model chooses functions based on logs
 SYSTEM_MODEL: str = "gpt-4-1106-preview"
 SYSTEM_PROMPT: str = ". ".join(
     [
@@ -59,165 +59,109 @@ SYSTEM_PROMPT: str = ". ".join(
         "Make sure to often listen and look",
         "If a human is visible, perform the greet action or speak to them",
         "If you hear a human, respond to them by speaking",
-        "Try to be random in your movements when exploring",
+        "Try to move towards interesting things",
         # "A good default is to listen",
         "Always pick a function to run, the other robot nodes depend on you",
     ]
 )
 SYSTEM_MAX_TOKENS: int = 32
 SYSTEM_TEMPERATURE: float = 0.3
-TOOLS = [
+FUNCTIONS = [
     {
-        "type": "function",
-        "function": {
-            "name": "explore",
-            "description": "Explore the world in a specified direction",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "direction": {
-                        "type": "string",
-                        "enum": [
-                            "move_forward",
-                            "move_backward",
-                            "move_left",
-                            "move_right",
-                            "rotate_left",
-                            "rotate_right",
-                            "look_up",
-                            "look_down",
-                            "look_left",
-                            "look_right",
-                        ],
-                    },
+        "name": "move",
+        "description": "Explore the world by moving in a specified direction",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "direction": {
+                    "type": "string",
+                    "enum": [
+                        "forward",
+                        "backward",
+                        "left",
+                        "right",
+                        "rotate left",
+                        "rotate right",
+                    ],
                 },
-                "required": ["direction"],
             },
+            "required": ["direction"],
         },
     },
     {
-        "type": "function",
-        "function": {
-            "name": "look",
-            "description": "Take an image from the camera and use the robot vision module to describe it",
-            "parameters": {"type": "object", "properties": {}, "required": []},
+        "name": "look",
+        "description": "Look in the specified direction, and use the robot vision module to describe the scene",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "direction": {
+                    "type": "string",
+                    "enum": [
+                        "forward",
+                        "left",
+                        "right",
+                        "up",
+                        "down",
+                    ],
+                },
+            },
+            "required": ["direction"],
         },
     },
     {
-        "type": "function",
-        "function": {
-            "name": "perform",
-            "description": "Perform a specified named action",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "action_name": {
-                        "type": "string",
-                        "enum": [
-                            "left_shot",
-                            "right_shot",
-                            "stand",
-                            "walk_ready",
-                            "twist",
-                            "three",
-                            "four",
-                            "hand_back",
-                            "greet",
-                        ],
-                    },
+        "name": "perform",
+        "description": "Perform a specified named action",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "action_name": {
+                    "type": "string",
+                    "enum": [
+                        "left_shot",
+                        "right_shot",
+                        "stand",
+                        "walk_ready",
+                        "twist",
+                        "three",
+                        "four",
+                        "hand_back",
+                        "greet",
+                    ],
                 },
             },
-            "required": ["action_name"],
+        },
+        "required": ["action_name"],
+    },
+    {
+        "name": "listen",
+        "description": "Listen for a specified duration in seconds",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10,
+                },
+            },
+            "required": ["duration"],
         },
     },
     {
-        "type": "function",
-        "function": {
-            "name": "listen",
-            "description": "Listen for a specified duration in seconds",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "duration": {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 10,
-                    },
+        "name": "speak",
+        "description": "Speak a specified text",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string",
                 },
-                "required": ["duration"],
             },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "speak",
-            "description": "Speak a specified text",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "text": {
-                        "type": "string",
-                    },
-                },
-                "required": ["text"],
-            },
+            "required": ["text"],
         },
     },
 ]
-FUNCTIONS = [tool["function"] for tool in TOOLS]
 DEFAULT_FUNCTION: str = "listen"
-
-
-def look(
-    device: str = VISION_DEVICE_PATH,
-    prompt: str = VISION_PROMPT,
-    vision_model: str = VISION_MODEL,
-    max_tokens: int = MAX_TOKENS_VISION,
-    width: int = IMAGE_WIDTH,
-    height: int = IMAGE_HEIGHT,
-) -> str:
-    speak("I am looking")
-    print(f"Looking at {device}")
-    cap = cv2.VideoCapture(device)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-    if not cap.isOpened():
-        return f"Cannot open webcam at {device}"
-    ret, frame = cap.read()  # Capture frame-by-frame
-    if not ret:
-        return f"Could not capture an image from the webcam at {device}"
-    cap.release()  # Release the webcam
-    _, buffer = cv2.imencode(".jpg", frame)
-    base64_image = base64.b64encode(buffer).decode("utf-8")
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}",
-    }
-    payload = {
-        "model": vision_model,
-        "messages": [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": prompt},
-                    {
-                        "type": "image_url",
-                        "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
-                    },
-                ],
-            }
-        ],
-        "max_tokens": max_tokens,
-    }
-    response = requests.post(
-        "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
-    )
-    content = response.json()["choices"][0]["message"]["content"]
-    print(f"Vision response: {content}")
-    speak(content)
-    return content
-
 
 def listen(
     duration: int = AUDIO_RECORD_SECONDS,
@@ -285,32 +229,86 @@ def speak(
     #     p.terminate()
     return text
 
-
-def perform(action_name: str) -> str:
-    current_dir = os.path.dirname(os.path.realpath(__file__))
-    perform_path = os.path.join(current_dir, "perform.py")
-    cmd = ["python3", perform_path, "--action", action_name]
+def robot_command(command:str, filename:str, logstr:str):
+    _path = os.path.join(os.path.dirname(os.path.realpath(__file__)), filename)
+    cmd = ["python3", _path, "--command", command]
     try:
         proc = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
         stdout, stderr = proc.communicate()
     except Exception as e:
-        return f"Error executing action {action_name}: {e}"
+        print(f"Exception on robot command {command}, {e}")
+        return f"Error on robot command {command}"
     if proc.returncode != 0:
-        return f"Action {action_name} failed with error: {stderr}"
+        print(f"Robot command {command} failed with error: {stderr}")
+        return f"Error on robot command {command}"
     else:
-        return f"I performed {action_name} sucessfully. Output: {stdout}"
+        print(f"Robot command {command} sucessfully. Output: {stdout}")
+        return f"{logstr} {command}"
+    
+def perform(command: str):
+    return robot_command(command, "perform.py", "Performed action")
+
+def move(command: str):
+    return robot_command(command, "move.py", "Moved")
+
+def look_at(command: str):
+    return robot_command(command, "look_at.py", "Looked at ")
+
+def look(
+    direction: str,
+    device: str = VISION_DEVICE_PATH,
+    prompt: str = VISION_PROMPT,
+    vision_model: str = VISION_MODEL,
+    max_tokens: int = MAX_TOKENS_VISION,
+    width: int = IMAGE_WIDTH,
+    height: int = IMAGE_HEIGHT,
+) -> str:
+    speak(look_at(direction))
+    print(f"Looking at {device}")
+    cap = cv2.VideoCapture(device)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+    if not cap.isOpened():
+        return f"Cannot open webcam at {device}"
+    ret, frame = cap.read()  # Capture frame-by-frame
+    if not ret:
+        return f"Could not capture an image from the webcam at {device}"
+    cap.release()  # Release the webcam
+    _, buffer = cv2.imencode(".jpg", frame)
+    base64_image = base64.b64encode(buffer).decode("utf-8")
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}",
+    }
+    payload = {
+        "model": vision_model,
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt},
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
+                    },
+                ],
+            }
+        ],
+        "max_tokens": max_tokens,
+    }
+    response = requests.post(
+        "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
+    )
+    content = response.json()["choices"][0]["message"]["content"]
+    print(f"Vision response: {content}")
+    speak(content)
+    return content
 
 
-def explore(direction: str) -> str:
-    # cmd = ["rosrun", "robot", "explore.py", direction]
-    # proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
-    return f"I explored by moving in {direction}"
-
-
-TOOLS_DICT = {
-    "explore": explore,
+REPERTOIRE = {
+    "move": move,
     "look": look,
     "perform": perform,
     "listen": listen,
@@ -318,17 +316,17 @@ TOOLS_DICT = {
 }
 
 
-def choose_tool(
+def do(
     prompt: str,
     model: str = SYSTEM_MODEL,
     max_tokens: int = SYSTEM_MAX_TOKENS,
     temperature: float = SYSTEM_TEMPERATURE,
     system: str = SYSTEM_PROMPT,
     functions: list = FUNCTIONS,
-    tools_dict: dict = TOOLS_DICT,
+    repertoire: dict = REPERTOIRE,
     default_function: str = DEFAULT_FUNCTION,
 ) -> str:
-    print(f"Choosing tool for prompt: {prompt}")
+    print(f"Prompt for do: {prompt}")
     response = CLIENT.chat.completions.create(
         model=model,
         messages=[
@@ -342,15 +340,15 @@ def choose_tool(
     print(f"Model response {response.choices[0].message.function_call}")
     if response.choices[0].message.function_call is None:
         print(f"Defaulting to {default_function}")
-        return tools_dict.get(default_function)()
+        return repertoire.get(default_function)()
     else:
         function_name = response.choices[0].message.function_call.name
         print(f"Function name: {function_name}")
         function_args = json.loads(response.choices[0].message.function_call.arguments)
         print(f"Function args: {function_args}")
-        function_callable = tools_dict.get(function_name)
+        function_callable = repertoire.get(function_name)
         if not function_callable:
-            return f"Unknown tool {function_name}"
+            return f"Unknown function {function_name}"
         return function_callable(**function_args)
 
 
@@ -359,4 +357,4 @@ if __name__ == "__main__":
     o = look()
     o = listen()
     while True:
-        o = choose_tool(o)
+        o = do(o)

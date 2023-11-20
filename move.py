@@ -6,73 +6,85 @@ import rospy
 from ainex_kinematics.gait_manager import GaitManager
 
 argparser = argparse.ArgumentParser()
-argparser.add_argument('--move', type=str, required=True, help='move name')
+argparser.add_argument("--move", type=str, required=True, help="move name")
 args = argparser.parse_args()
 
-def move(move_name: str) -> str:
-    rospy.init_node('simple_gait_control_demo')
+# param step_velocity: Speed selection has three levels: 1, 2, 3, and 4, with speed decreasing from fast to slow.
+SPEED: int = 1  # Integer in range [1, 4] slow to fast
+# param x_amplitude: Step stride in the x direction (meters).
+X_AMPLITUDE: float = 0.02  # Highest I see in examples is 0.02
+# param y_amplitude: Step stride in the y direction (meters).
+Y_AMPLITUDE: float = 0.01  # Highest I see in examples is 0.01
+# param rotation_angle: Rotation extent (degrees).
+ROTATION_ANGLE: int = 8  # Highest I see in examples is 5, 8
+# param arm_swap: Arm swing extent (degrees), default is 30. When it is 0, no commands will be sent to the arms.
+ARM_SWING_DEGREE: int = 30  # Highest I see in examples is 30
+# param step_num: Number of steps to take, default is 1.
+STEP_NUM: int = 2  # I see numbers like 0 and 3 in the code
+
+
+def move(
+    move_name: str,
+    speed: int = SPEED,
+    x_amplitude: float = X_AMPLITUDE,
+    y_amplitude: float = Y_AMPLITUDE,
+    rotation_angle: int = ROTATION_ANGLE,
+    arm_swing_degree: int = ARM_SWING_DEGREE,
+    step_num: int = STEP_NUM,
+) -> str:
+    rospy.init_node("simple_gait_control_demo")
     gait_manager = GaitManager()
     # rospy.sleep(0.2)
     print("GaitManager initialized.")
-    
-# param step_velocity: Speed selection has three levels: 1, 2, 3, and 4, with speed decreasing from fast to slow.
-# param x_amplitude: Step stride in the x direction (meters).
-# param y_amplitude: Step stride in the y direction (meters).
-# param rotation_angle: Rotation extent (degrees).
-# param arm_swap: Arm swing extent (degrees), default is 30. When it is 0, no commands will be sent to the arms.
-# step_velocity: int = 1, # 1, 2, 3, 4
-# x_amplitude: float = 0.0, # 0.01, -0.01, 0.02, -0.02
-# y_amplitude: float = 0.9, # 0.01, -0.01
-
-    if "fast" in move_name:
-        speed = 3
-        arm_swing_degree = 30
-    else:
-        speed = 1
-        arm_swing_degree = 0
-    print(f"Speed set to {speed} in range [1, 4]")
-    print(f"Arm swing degree set to {arm_swing_degree} in range [0, 30]")
-
-    if "forward" in move_name:
-        x_amplitude = 0.01
+    assert move_name in [
+        "forward",
+        "backward",
+        "left",
+        "right",
+        "rotate left",
+        "rotate right",
+    ], f"Unknown move name: {move_name}"
+    if move_name == "forward":
         y_amplitude = 0.0
-        rotation_angle = 0.0
-    elif "backward" in move_name:
-        x_amplitude = -0.01
+        rotation_angle = 0
+    elif move_name == "backward":
+        x_amplitude = -x_amplitude
         y_amplitude = 0.0
-        rotation_angle = 0.0
-    elif "left" in move_name:
+        rotation_angle = 0
+    elif move_name == "left":
         x_amplitude = 0.0
-        y_amplitude = 0.01
-        rotation_angle = 0.0
-    elif "right" in move_name:
+        rotation_angle = 0
+    elif move_name == "right":
         x_amplitude = 0.0
-        y_amplitude = -0.01
-        rotation_angle = 0.0
-    elif "rotate left" in move_name:
+        y_amplitude = -y_amplitude
+        rotation_angle = 0
+    elif move_name == "rotate left":
         x_amplitude = 0.0
         y_amplitude = 0.0
-        rotation_angle = 5
-    elif "rotate right" in move_name:
+    elif move_name == "rotate right":
         x_amplitude = 0.0
         y_amplitude = 0.0
-        rotation_angle = -5
-    else:
-        raise ValueError(f"Unknown move name: {move_name}")
+        rotation_angle = -rotation_angle
+    print(f"speed set to {speed}")
     print(f"x_amplitude set to {x_amplitude}")
     print(f"y_amplitude set to {y_amplitude}")
     print(f"rotation_angle set to {rotation_angle}")
-
-    num_steps = 1
-    print(f"num_steps set to {num_steps}")
-    
+    print(f"Number of steps {step_num}")
     print(f"Moving {move_name}...")
-    gait_manager.move(speed, x_amplitude, y_amplitude, rotation_angle, arm_swing_degree, step_num=num_steps)  # 控制行走步数
-    print(f"Movement completed.")
+    gait_manager.move(
+        speed,
+        x_amplitude,
+        y_amplitude,
+        rotation_angle,
+        arm_swing_degree,
+        step_num=step_num,
+    )
+    print("Movement completed.")
     # rospy.sleep(0.2)
-    print(f"Stopping GaitManager...")
+    print("Stopping GaitManager...")
     gait_manager.stop()
-    print(f"GaitManager stopped.")
+    print("GaitManager stopped.")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     move(args.move)
