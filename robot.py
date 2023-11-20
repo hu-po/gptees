@@ -26,7 +26,8 @@ VISION_PROMPT: str = ". ".join(
         "You are small and only 20cm off the ground",
         "Focus on the most important things",
         "If there are humans mention them and their relative position",
-        "do not mention the image, save tokens by directly describing "
+        "do not mention the image, save tokens by directly describing the scene",
+        "Your response will be sent over JSON, make sure to return a valid JSON string",
         # "You might be staring at the ceiling",
     ]
 )
@@ -348,7 +349,12 @@ def do(
     else:
         function_name = response.choices[0].message.function_call.name
         print(f"Function name: {function_name}")
-        function_args = json.loads(response.choices[0].message.function_call.arguments)
+        try:
+            function_args = json.loads(response.choices[0].message.function_call.arguments)
+            print(f"Function args: {function_args}")
+        except json.JSONDecodeError as e:
+            print(f"Could not decode function args: {e}")
+            function_args = {}
         print(f"Function args: {function_args}")
         function_callable = repertoire.get(function_name)
         if not function_callable:
