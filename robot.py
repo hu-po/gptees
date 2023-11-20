@@ -65,7 +65,7 @@ SYSTEM_PROMPT: str = ". ".join(
         "Always pick a function to run, the other robot nodes depend on you",
     ]
 )
-SYSTEM_MAX_TOKENS: int = 32
+SYSTEM_MAX_TOKENS: int = 16
 SYSTEM_TEMPERATURE: float = 0.3
 SYSTEM_LOG_LENGTH: int = 4  # Number of lines to keep in the log
 FUNCTIONS = [
@@ -273,8 +273,8 @@ def look(
     speak(look_at(direction))
     print(f"Looking at {device}")
     cap = cv2.VideoCapture(device)
-    # cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
     if not cap.isOpened():
         return f"Cannot open webcam at {device}"
     ret, frame = cap.read()  # Capture frame-by-frame
