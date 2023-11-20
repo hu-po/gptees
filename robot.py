@@ -36,7 +36,7 @@ IMAGE_WIDTH: int = 512  # width of image in pixels
 IMAGE_HEIGHT: int = 512  # height of image in pixels
 # VISION_DEVICE_PATH: str = "/dev/video0"  # Camera device path on igigi
 VISION_DEVICE_PATH: str = "/dev/usb_cam"  # Camera device path on humanoid
-IMAGE_OUTPUT_FILENAME: str = "image.jpg"  # Image is constantly overwritten
+IMAGE_OUTPUT_FILENAME: str = "/tmp/image.jpg"  # Image is constantly overwritten
 
 # Audio models
 TTS_MODEL: str = "tts-1"  # Text-to-speech model
@@ -261,9 +261,6 @@ def move(direction: str = DEFAULT_MOVE_DIRECTION) -> str:
 
 def look_at(direction: str = DEFAULT_LOOK_DIRECTION) -> str:
     return robot_command(direction, "look_at.py", "Looked at ")
-
-def image() -> str:
-    return robot_command(IMAGE_OUTPUT_FILENAME, "image.py", "Captured image")
 
 def look(
     direction: str = DEFAULT_LOOK_DIRECTION,
