@@ -65,10 +65,17 @@ SYSTEM_PROMPT: str = ". ".join(
         "If a human is visible, perform the greet action or speak to them",
         "If you hear a human, respond to them by speaking",
         "Try to move towards interesting things",
-        # "A good default is to listen",
-        "Always pick a function to run, the other robot nodes depend on you",
+        "A good default is to listen",
+        "Always pick a function to run",
+        "The other robot nodes depend on you",
     ]
 )
+if DEAF:
+    SYSTEM_PROMPT += ["You are deaf.", "Do not listen"]
+if BLIND:
+    SYSTEM_PROMPT += ["You are blind.", "Do not look"]
+if MUTE:
+    SYSTEM_PROMPT += ["You are mute.", "Do not speak"]
 SYSTEM_MAX_TOKENS: int = 16
 SYSTEM_TEMPERATURE: float = 0.3
 SYSTEM_LOG_LENGTH: int = 4  # Number of lines to keep in the log
@@ -202,7 +209,7 @@ def listen(
 
 
 def speak(
-    text: str,
+    text: str = GREETING,
     model: str = TTS_MODEL,
     voice: str = VOICE,
     mute: bool = MUTE,
@@ -356,7 +363,7 @@ def do(
 
 if __name__ == "__main__":
     log = []
-    speak(GREETING)
+    log.append(speak())
     log.append(look())
     log.append(listen())
     while True:
