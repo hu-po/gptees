@@ -11,10 +11,10 @@ args = argparser.parse_args()
 # Servo 23 is the rotation/pan neck servo range [300, 600]
 # Servo 24 is the tilt/vertical neck servo range [260, 650]
 FORWARD_SERVO_POSITIONS = [[23, 500], [24, 500]]
-LEFT_SERVO_POSITIONS = [[23, 400], [24, 500]]
-RIGHT_SERVO_POSITIONS = [[23, 600], [24, 500]]
+LEFT_SERVO_POSITIONS = [[23, 650], [24, 500]]
+RIGHT_SERVO_POSITIONS = [[23, 350], [24, 500]]
 UP_SERVO_POSITIONS = [[23, 500], [24, 650]]
-DOWN_SERVO_POSITIONS = [[23, 500], [24, 450]]
+DOWN_SERVO_POSITIONS = [[23, 500], [24, 400]]
 
 def look_at(command: str) -> str:
     print(f"Look_at {command}")

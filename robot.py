@@ -258,7 +258,7 @@ def look_at(command: str):
     return robot_command(command, "look_at.py", "Looked at ")
 
 def look(
-    direction: str,
+    direction: str = "forward",
     device: str = VISION_DEVICE_PATH,
     prompt: str = VISION_PROMPT,
     vision_model: str = VISION_MODEL,
