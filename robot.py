@@ -47,7 +47,7 @@ AUDIO_RECORD_SECONDS: int = 4  # Duration for audio recording
 # AUDIO_SAMPLE_RATE: int = 44100  # Sample rate for quality audio recording
 AUDIO_SAMPLE_RATE: int = 16000  # Sample rate for speedy audio recording
 AUDIO_CHANNELS: int = 1  # mono
-AUDIO_DEVICE: int = 1  # audio device index
+AUDIO_DEVICE: int = 2  # audio device index
 AUDIO_OUTPUT_PATH: str = "/tmp/audio.wav"  # recorded audio is constantly overwritten
 
 # System model chooses functions based on logs
