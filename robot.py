@@ -71,11 +71,11 @@ SYSTEM_PROMPT: str = ". ".join(
     ]
 )
 if DEAF:
-    SYSTEM_PROMPT += ["You are deaf.", "Do not listen"]
+    SYSTEM_PROMPT += " You are deaf. Do not listen."
 if BLIND:
-    SYSTEM_PROMPT += ["You are blind.", "Do not look"]
+    SYSTEM_PROMPT += " You are blind. Do not look."
 if MUTE:
-    SYSTEM_PROMPT += ["You are mute.", "Do not speak"]
+    SYSTEM_PROMPT += " You are mute. Do not speak."
 SYSTEM_MAX_TOKENS: int = 16
 SYSTEM_TEMPERATURE: float = 0.3
 SYSTEM_LOG_LENGTH: int = 4  # Number of lines to keep in the log
