@@ -28,7 +28,7 @@ VISION_PROMPT: str = ". ".join(
         "Focus on the most important things",
         "If there are humans mention them and their relative position",
         "do not mention the image, save tokens by directly describing the scene",
-        "Your response will be sent over JSON, make sure to return a valid JSON string",
+        "Your reponse should not contain any special characters. All lowercase. Only letters.",
         # "You might be staring at the ceiling",
     ]
 )
