@@ -8,10 +8,8 @@ import subprocess
 import cv2
 import requests
 from openai import OpenAI
-import pyaudio
 from pydub import AudioSegment
 from pydub.playback import play
-from pydub.utils import make_chunks
 import sounddevice as sd
 from scipy.io.wavfile import write
 
@@ -35,8 +33,6 @@ VISION_PROMPT: str = ". ".join(
 MAX_TOKENS_VISION: int = 16  # max tokens for reply
 IMAGE_WIDTH: int = 512  # width of image in pixels
 IMAGE_HEIGHT: int = 512  # height of image in pixels
-# VISION_DEVICE_PATH: str = "/dev/video0"  # Camera device path on igigi
-VISION_DEVICE_PATH: str = "/dev/usb_cam"  # Camera device path on humanoid
 IMAGE_OUTPUT_FILENAME: str = "/tmp/image.jpg"  # Image is constantly overwritten
 
 # Audio models
@@ -48,7 +44,6 @@ AUDIO_RECORD_SECONDS: int = 4  # Duration for audio recording
 # AUDIO_SAMPLE_RATE: int = 44100  # Sample rate for quality audio recording
 AUDIO_SAMPLE_RATE: int = 16000  # Sample rate for speedy audio recording
 AUDIO_CHANNELS: int = 1  # mono
-AUDIO_DEVICE: int = 2  # audio device index
 AUDIO_OUTPUT_PATH: str = "/tmp/audio.wav"  # recorded audio is constantly overwritten
 
 # System model chooses functions based on logs
@@ -170,6 +165,7 @@ DEFAULT_ACTION_NAME: str = "greet"
 DEFAULT_MOVE_DIRECTION: str = "forward"
 DEFAULT_LOOK_DIRECTION: str = "forward"
 
+
 def listen(
     duration: int = AUDIO_RECORD_SECONDS,
     sample_rate: int = AUDIO_SAMPLE_RATE,
@@ -199,7 +195,6 @@ def speak(
     text: str,
     model: str = TTS_MODEL,
     voice: str = VOICE,
-    device: str = AUDIO_DEVICE,
     save_to_file=True,
 ) -> str:
     file_name = f"/tmp/tmp{hashlib.sha256(text.encode()).hexdigest()[:10]}.mp3"
@@ -214,35 +209,10 @@ def speak(
         print(f"Audio already exists at {file_name}")
         seg = AudioSegment.from_file(file_name, format="mp3")
     play(seg)
-    # print(f"Playing audio: {text}")
-    # p = pyaudio.PyAudio()
-    # print(f"Audio device count: {p.get_device_count()}")
-    # print(f"Audio device info: {p.get_device_info_by_index(device)}")
-    # print(f"Segment sample width: {seg.sample_width}")
-    # print(f"Segment channels: {seg.channels}")
-    # print(f"Segment frame rate: {seg.frame_rate}")
-    # stream = p.open(
-    #     format=p.get_format_from_width(seg.sample_width),
-    #     channels=seg.channels,
-    #     rate=seg.frame_rate,
-    #     output=True,
-    #     output_device_index=device,
-    # )
-
-    # # Just in case there were any exceptions/interrupts, we release the resource
-    # # So as not to raise OSError: Device Unavailable should play() be used again
-    # try:
-    #     # break audio into half-second chunks (to allows keyboard interrupts)
-    #     for chunk in make_chunks(seg, 500):
-    #         stream.write(chunk._data)
-    # finally:
-    #     stream.stop_stream()
-    #     stream.close()
-
-    #     p.terminate()
     return f"Spoke {text}"
 
-def robot_command(command:str, filename:str, logstr:str):
+
+def robot_command(command: str, filename: str, logstr: str):
     _path = os.path.join(os.path.dirname(os.path.realpath(__file__)), filename)
     cmd = ["python3", _path, "--command", command]
     try:
@@ -259,26 +229,29 @@ def robot_command(command:str, filename:str, logstr:str):
     else:
         print(f"Robot command {command} sucessfully. Output: {stdout}")
         return f"{logstr} {command}"
-    
+
+
 def perform(action_name: str = DEFAULT_ACTION_NAME) -> str:
     return robot_command(action_name, "perform.py", "Performed action")
+
 
 def move(direction: str = DEFAULT_MOVE_DIRECTION) -> str:
     return robot_command(direction, "move.py", "Moved")
 
+
 def look_at(direction: str = DEFAULT_LOOK_DIRECTION) -> str:
-    return robot_command(direction, "look_at.py", "Looked at ")
+    return robot_command(direction, "look_at.py", "Looked")
+
 
 def look(
     direction: str = DEFAULT_LOOK_DIRECTION,
-    device: str = VISION_DEVICE_PATH,
+    # device: str = VISION_DEVICE_PATH,
     prompt: str = VISION_PROMPT,
     vision_model: str = VISION_MODEL,
     max_tokens: int = MAX_TOKENS_VISION,
     image_path: str = IMAGE_OUTPUT_FILENAME,
 ) -> str:
     speak(look_at(direction))
-    print(f"Looking at {device}")
     frame = cv2.imread(image_path)
     if frame is None:
         return f"Could not read the image from {image_path}"
@@ -351,7 +324,9 @@ def do(
         function_name = response.choices[0].message.function_call.name
         print(f"Function name: {function_name}")
         try:
-            function_args = json.loads(response.choices[0].message.function_call.arguments)
+            function_args = json.loads(
+                response.choices[0].message.function_call.arguments
+            )
             print(f"Function args: {function_args}")
         except json.JSONDecodeError as e:
             print(f"Could not decode function args: {e}")
