@@ -37,6 +37,7 @@ MAX_TOKENS_VISION: int = 16  # max tokens for reply
 IMAGE_WIDTH: int = 512  # width of image in pixels
 IMAGE_HEIGHT: int = 512  # height of image in pixels
 IMAGE_OUTPUT_FILENAME: str = "/tmp/image.jpg"  # Image is constantly overwritten
+BLIND: bool = True  # Do not use vision module
 
 # Audio models
 TTS_MODEL: str = "tts-1"  # Text-to-speech model
@@ -50,6 +51,7 @@ AUDIO_CHANNELS: int = 1  # mono
 AUDIO_OUTPUT_PATH: str = "/tmp/audio.wav"  # recorded audio is constantly overwritten
 MUTE: bool = True  # Mute audio output
 SAVE_AUDIO: bool = True  # Speaking audio can be cached in /tmp for faster playback
+DEAF: bool = False  # Do not listen for audio input
 
 # System model chooses functions based on logs
 SYSTEM_MODEL: str = "gpt-4-1106-preview"
@@ -176,7 +178,10 @@ def listen(
     sample_rate: int = AUDIO_SAMPLE_RATE,
     channels: int = AUDIO_CHANNELS,
     output_path: str = AUDIO_OUTPUT_PATH,
+    deaf: bool = DEAF,
 ) -> str:
+    if deaf:
+        return "Could not hear, I am deaf"
     speak(f"listening for {duration} seconds")
     print(f"Listening for {duration} seconds")
     audio_data = sd.rec(
@@ -203,6 +208,8 @@ def speak(
     mute: bool = MUTE,
     save: bool = SAVE_AUDIO,
 ) -> str:
+    if mute:
+        return f"Inner voice {text}"
     file_name = f"/tmp/tmp{hashlib.sha256(text.encode()).hexdigest()[:10]}.mp3"
     if not os.path.exists(file_name):
         response = CLIENT.audio.speech.create(model=model, voice=voice, input=text)
@@ -214,8 +221,7 @@ def speak(
     else:
         print(f"Audio already exists at {file_name}")
         seg = AudioSegment.from_file(file_name, format="mp3")
-    if not mute:
-        play(seg)
+    play(seg)
     return f"Spoke {text}"
 
 
@@ -257,7 +263,10 @@ def look(
     vision_model: str = VISION_MODEL,
     max_tokens: int = MAX_TOKENS_VISION,
     image_path: str = IMAGE_OUTPUT_FILENAME,
+    blind: bool = BLIND,
 ) -> str:
+    if blind:
+        return "No image available"
     speak(look_at(direction))
     frame = cv2.imread(image_path)
     if frame is None:
