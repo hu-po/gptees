@@ -45,6 +45,8 @@ AUDIO_RECORD_SECONDS: int = 4  # Duration for audio recording
 AUDIO_SAMPLE_RATE: int = 16000  # Sample rate for speedy audio recording
 AUDIO_CHANNELS: int = 1  # mono
 AUDIO_OUTPUT_PATH: str = "/tmp/audio.wav"  # recorded audio is constantly overwritten
+MUTE: bool = True  # Mute audio output
+SAVE_AUDIO: bool = True  # Speaking audio can be cached in /tmp for faster playback
 
 # System model chooses functions based on logs
 SYSTEM_MODEL: str = "gpt-4-1106-preview"
@@ -195,20 +197,22 @@ def speak(
     text: str,
     model: str = TTS_MODEL,
     voice: str = VOICE,
-    save_to_file=True,
+    mute: bool = MUTE,
+    save: bool = SAVE_AUDIO,
 ) -> str:
     file_name = f"/tmp/tmp{hashlib.sha256(text.encode()).hexdigest()[:10]}.mp3"
     if not os.path.exists(file_name):
         response = CLIENT.audio.speech.create(model=model, voice=voice, input=text)
         byte_stream = io.BytesIO(response.content)
         seg = AudioSegment.from_file(byte_stream, format="mp3")
-        if save_to_file:
+        if save:
             seg.export(file_name, format="mp3")
             print(f"Saved audio to {file_name}")
     else:
         print(f"Audio already exists at {file_name}")
         seg = AudioSegment.from_file(file_name, format="mp3")
-    play(seg)
+    if not mute:
+        play(seg)
     return f"Spoke {text}"
 
 
